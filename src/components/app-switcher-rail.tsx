@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CheckSquare, Handshake, HardHat, Home } from "lucide-react";
+import NotificationSetup from "./notification-setup";
 
 const TOOLS = [
   { key: "home", href: "/", label: "Home", icon: Home },
@@ -38,6 +39,10 @@ export default function AppSwitcherRail({ active }: { active: "home" | "crm" | "
           </Link>
         );
       })}
+
+      <div className="mt-auto">
+        <NotificationSetup />
+      </div>
     </aside>
   );
 }
