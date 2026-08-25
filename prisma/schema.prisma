@@ -1,0 +1,329 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum Stage {
+  LEAD
+  REVIEWING
+  TENDER_SUBMITTED
+  WON
+  LOST
+  DECLINED
+  ON_HOLD
+}
+
+enum DocCategory {
+  DRAWING
+  TENDER_DOC
+  CONTRACT
+  CORRESPONDENCE
+  OTHER
+}
+
+enum ProjectType {
+  DESIGN_BUILD
+  BUILD
+  PROJECT_MANAGEMENT
+  CONSULTANCY
+  LABOUR_SUPPLY
+}
+
+enum Temperature {
+  COLD
+  WARM
+  HOT
+}
+
+enum TaskStatus {
+  OPEN
+  DONE
+}
+
+enum TaskScope {
+  CRM
+  PM
+}
+
+enum PmProjectStatus {
+  ACTIVE
+  ON_HOLD
+  COMPLETE
+}
+
+enum ScheduleItemStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  DONE
+}
+
+enum PmDocCategory {
+  PROCUREMENT
+  DESIGN
+  COMMERCIAL
+  SITE_WORKS
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(MEMBER)
+  createdAt    DateTime @default(now())
+
+  projects   Project[]  @relation("ProjectOwner")
+  documents  Document[]
+  notes      Note[]
+  emailLogs  EmailLog[]
+  activities Activity[]
+  tasks       Task[]
+  taskNotes   TaskNote[]
+  subtasks    Subtask[]
+  pmProjects  PmProject[]  @relation("PmProjectOwner")
+  pmDocuments PmDocument[]
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  industry  String?
+  website   String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contacts   Contact[]
+  projects   Project[]
+  pmProjects PmProject[]
+}
+
+model Contact {
+  id       String  @id @default(cuid())
+  clientId String
+  client   Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  name     String
+  role     String?
+  email    String?
+  phone    String?
+  isPrimary Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id                 String       @id @default(cuid())
+  title              String
+  reference          String?
+  stage              Stage        @default(LEAD)
+  projectType        ProjectType?
+  temperature        Temperature?
+  value              Float?
+  currency           String       @default("AED")
+  location           String?
+  description        String?
+  contactName        String?
+  contactEmail       String?
+  contactPhone1      String?
+  contactPhone2      String?
+  submissionDeadline DateTime?
+  siteVisitDate      DateTime?
+  awardDate          DateTime?
+  clientId           String?
+  client             Client?      @relation(fields: [clientId], references: [id])
+  ownerId            String?
+  owner              User?        @relation("ProjectOwner", fields: [ownerId], references: [id])
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  documents  Document[]
+  notes      Note[]
+  emailLogs  EmailLog[]
+  activities Activity[]
+  tasks      Task[]
+  subtasks   Subtask[]
+  pmProject  PmProject?
+}
+
+model Document {
+  id           String      @id @default(cuid())
+  projectId    String
+  project      Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  category     DocCategory @default(OTHER)
+  originalName String
+  storedName   String
+  mimeType     String
+  size         Int
+  uploadedById String?
+  uploadedBy   User?       @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime    @default(now())
+}
+
+model Note {
+  id          String     @id @default(cuid())
+  projectId   String?
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pmProjectId String?
+  pmProject   PmProject? @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  subtaskId   String?
+  subtask     Subtask?   @relation(fields: [subtaskId], references: [id], onDelete: Cascade)
+  authorId    String?
+  author      User?      @relation(fields: [authorId], references: [id])
+  body        String
+  createdAt   DateTime   @default(now())
+}
+
+model EmailLog {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  subject    String
+  fromAddr   String
+  toAddr     String
+  direction  String   @default("outgoing")
+  sentAt     DateTime
+  body       String?
+  loggedById String?
+  loggedBy   User?    @relation(fields: [loggedById], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  type      String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id            String     @id @default(cuid())
+  title         String
+  dueDate       DateTime?
+  status        TaskStatus @default(OPEN)
+  scope         TaskScope  @default(CRM)
+  autoGenerated Boolean    @default(false)
+  autoKey       String?
+  projectId     String?
+  project       Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pmProjectId   String?
+  pmProject     PmProject? @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  createdById   String?
+  createdBy     User?      @relation(fields: [createdById], references: [id])
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  taskNotes TaskNote[]
+  subtasks  Subtask[]
+
+  @@unique([projectId, autoKey])
+  @@unique([pmProjectId, autoKey])
+}
+
+model TaskNote {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model Subtask {
+  id            String     @id @default(cuid())
+  taskId        String?
+  task          Task?      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  projectId     String?
+  project       Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pmProjectId   String?
+  pmProject     PmProject? @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  title         String
+  dueDate       DateTime?
+  status        TaskStatus @default(OPEN)
+  scope         TaskScope  @default(CRM)
+  autoGenerated Boolean    @default(false)
+  autoKey       String?
+  createdById   String?
+  createdBy     User?      @relation(fields: [createdById], references: [id])
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  notes Note[]
+
+  @@unique([projectId, autoKey])
+}
+
+/// A live construction/fit-out project in the PM tool — created either from
+/// scratch or by promoting a Won tender from the CRM (linkedTenderId).
+model PmProject {
+  id       String          @id @default(cuid())
+  title    String
+  status   PmProjectStatus @default(ACTIVE)
+  value    Float?
+  currency String          @default("AED")
+  location String?
+  description String?
+
+  startDate      DateTime?
+  targetEndDate  DateTime?
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  linkedTenderId String?  @unique
+  linkedTender   Project? @relation(fields: [linkedTenderId], references: [id])
+
+  ownerId String?
+  owner   User?   @relation("PmProjectOwner", fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  scheduleItems ScheduleItem[]
+  tasks         Task[]
+  subtasks      Subtask[]
+  pmDocuments   PmDocument[]
+  notes         Note[]
+}
+
+model PmDocument {
+  id           String        @id @default(cuid())
+  pmProjectId  String
+  pmProject    PmProject     @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  category     PmDocCategory
+  originalName String
+  storedName   String
+  mimeType     String
+  size         Int
+  uploadedById String?
+  uploadedBy   User?         @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime      @default(now())
+}
+
+model ScheduleItem {
+  id              String              @id @default(cuid())
+  pmProjectId     String
+  pmProject       PmProject           @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  title           String
+  startDate       DateTime
+  endDate         DateTime
+  percentComplete Int                 @default(0)
+  status          ScheduleItemStatus  @default(NOT_STARTED)
+  sortOrder       Int                 @default(0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}

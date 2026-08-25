@@ -1,0 +1,137 @@
+"use client";
+
+import { useMemo, useState, useTransition } from "react";
+import Link from "next/link";
+import { format } from "date-fns";
+import { Sparkles } from "lucide-react";
+import { BUCKETS, BUCKET_LABELS, DROPPABLE_BUCKETS, getBucket, bucketToDate, type Bucket } from "@/lib/date-ranges";
+import { updateDeadlineDueDate } from "@/lib/actions/pm-deadlines";
+import type { DeadlineRow } from "./types";
+
+type DeadlineWithCount = DeadlineRow & { _count: { taskNotes: number } };
+
+export default function KanbanView({ deadlines }: { deadlines: DeadlineWithCount[] }) {
+  const [overrides, setOverrides] = useState<Record<string, Date | null>>({});
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverBucket, setDragOverBucket] = useState<Bucket | null>(null);
+  const [, startTransition] = useTransition();
+
+  // Derived fresh from props each render (see equivalent note in the other explorers) so
+  // newly created/deleted deadlines show up without a full reload; overrides only cover
+  // the brief optimistic window right after a drop, before the server data refreshes.
+  const items = useMemo(
+    () =>
+      deadlines.map((d) => (d.id in overrides ? { ...d, dueDate: overrides[d.id] } : d)),
+    [deadlines, overrides]
+  );
+
+  const columns = useMemo(() => {
+    const map = Object.fromEntries(BUCKETS.map((b) => [b, [] as DeadlineWithCount[]])) as Record<
+      Bucket,
+      DeadlineWithCount[]
+    >;
+    for (const item of items) map[getBucket(item)].push(item);
+    return map;
+  }, [items]);
+
+  function handleDrop(bucket: Bucket) {
+    setDragOverBucket(null);
+    if (!dragId || !DROPPABLE_BUCKETS.includes(bucket)) {
+      setDragId(null);
+      return;
+    }
+    const item = items.find((d) => d.id === dragId);
+    if (!item || getBucket(item) === bucket) {
+      setDragId(null);
+      return;
+    }
+
+    const newDate = bucketToDate(bucket);
+    setOverrides((prev) => ({ ...prev, [dragId]: newDate }));
+    startTransition(() => {
+      updateDeadlineDueDate(dragId, newDate ? newDate.toISOString() : null);
+    });
+    setDragId(null);
+  }
+
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-2">
+      {BUCKETS.map((bucket) => {
+        const droppable = DROPPABLE_BUCKETS.includes(bucket);
+        return (
+          <div
+            key={bucket}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOverBucket(bucket);
+            }}
+            onDragLeave={() => setDragOverBucket((b) => (b === bucket ? null : b))}
+            onDrop={() => handleDrop(bucket)}
+            className={`flex min-h-[220px] w-72 shrink-0 flex-col rounded-xl border p-2 transition ${
+              dragOverBucket === bucket
+                ? droppable
+                  ? "border-slate-400 bg-slate-100"
+                  : "border-red-200 bg-red-50"
+                : "border-slate-200 bg-slate-50"
+            }`}
+          >
+            <div className="mb-2 flex items-center justify-between px-1.5 pt-1">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                {BUCKET_LABELS[bucket]}
+              </span>
+              <span className="text-xs font-medium text-slate-400">{columns[bucket].length}</span>
+            </div>
+
+            <div className="flex flex-1 flex-col gap-2">
+              {columns[bucket].map((deadline) => {
+                const doneCount = deadline.subtasks.filter((s) => s.status === "DONE").length;
+                return (
+                  <Link
+                    key={deadline.id}
+                    href={`/pm/deadlines/${deadline.id}`}
+                    draggable
+                    onDragStart={() => setDragId(deadline.id)}
+                    className={`cursor-grab rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md active:cursor-grabbing ${
+                      deadline.status === "DONE" ? "opacity-60" : ""
+                    }`}
+                  >
+                    <p
+                      className={`mb-1.5 line-clamp-2 text-sm font-medium ${
+                        deadline.status === "DONE" ? "text-slate-400 line-through" : "text-slate-900"
+                      }`}
+                    >
+                      {deadline.title}
+                    </p>
+                    {deadline.pmProject && (
+                      <p className="mb-1.5 truncate text-xs text-slate-500">{deadline.pmProject.title}</p>
+                    )}
+                    <div className="flex items-center justify-between">
+                      {deadline.subtasks.length > 0 ? (
+                        <span className="text-xs text-slate-400">
+                          {doneCount}/{deadline.subtasks.length} tasks
+                        </span>
+                      ) : (
+                        <span />
+                      )}
+                      <div className="flex items-center gap-1.5">
+                        {deadline.autoGenerated && <Sparkles size={11} className="text-slate-300" />}
+                        {deadline.dueDate && (
+                          <span className="text-xs text-slate-400">{format(deadline.dueDate, "MMM d")}</span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+              {columns[bucket].length === 0 && (
+                <p className="px-1.5 py-6 text-center text-xs text-slate-400">
+                  {droppable ? "Drop here" : "None"}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
