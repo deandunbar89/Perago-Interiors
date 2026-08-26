@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { syncPmProjectDates } from "@/lib/tasks-sync";
+import { DEFAULT_PM_SUBSECTIONS } from "@/lib/constants";
 
 async function requireUserId() {
   const session = await auth();
@@ -41,6 +42,10 @@ export async function createPmProject(_prevState: unknown, formData: FormData) {
     data: { title, clientId, value, currency, location, description, startDate, targetEndDate, ownerId: userId },
   });
 
+  await prisma.pmDocSubsection.createMany({
+    data: DEFAULT_PM_SUBSECTIONS.map((s, i) => ({ ...s, pmProjectId: pmProject.id, sortOrder: i })),
+  });
+
   await syncPmProjectDates(pmProject.id);
 
   revalidatePath("/pm");
@@ -72,6 +77,10 @@ export async function promoteToPm(tenderProjectId: string) {
       linkedTenderId: tender.id,
       ownerId: userId,
     },
+  });
+
+  await prisma.pmDocSubsection.createMany({
+    data: DEFAULT_PM_SUBSECTIONS.map((s, i) => ({ ...s, pmProjectId: pmProject.id, sortOrder: i })),
   });
 
   revalidatePath("/pm");

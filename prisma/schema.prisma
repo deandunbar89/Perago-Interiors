@@ -71,6 +71,17 @@ enum PmDocCategory {
   DESIGN
   COMMERCIAL
   SITE_WORKS
+  OPERATIONS
+}
+
+enum UploadMode {
+  SINGLE
+  MULTIPLE
+}
+
+enum SnagStatus {
+  OPEN
+  CLOSED
 }
 
 model User {
@@ -92,6 +103,7 @@ model User {
   pmProjects  PmProject[]  @relation("PmProjectOwner")
   pmDocuments PmDocument[]
   pushSubscriptions PushSubscription[]
+  snags       Snag[]
 }
 
 model PushSubscription {
@@ -308,21 +320,60 @@ model PmProject {
   tasks         Task[]
   subtasks      Subtask[]
   pmDocuments   PmDocument[]
+  docSubsections PmDocSubsection[]
   notes         Note[]
+  snags         Snag[]
+}
+
+model PmDocSubsection {
+  id             String         @id @default(cuid())
+  pmProjectId    String
+  pmProject      PmProject      @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  category       PmDocCategory
+  alsoInCategory PmDocCategory?
+  name           String
+  mode           UploadMode     @default(MULTIPLE)
+  sortOrder      Int            @default(0)
+  createdAt      DateTime       @default(now())
+
+  documents PmDocument[]
+
+  @@unique([pmProjectId, category, name])
 }
 
 model PmDocument {
-  id           String        @id @default(cuid())
-  pmProjectId  String
-  pmProject    PmProject     @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
-  category     PmDocCategory
-  originalName String
-  storedName   String
-  mimeType     String
-  size         Int
-  uploadedById String?
-  uploadedBy   User?         @relation(fields: [uploadedById], references: [id])
-  createdAt    DateTime      @default(now())
+  id            String           @id @default(cuid())
+  pmProjectId   String
+  pmProject     PmProject        @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  category      PmDocCategory
+  subsectionId  String?
+  subsection    PmDocSubsection? @relation(fields: [subsectionId], references: [id], onDelete: Cascade)
+  originalName  String
+  storedName    String
+  mimeType      String
+  size          Int
+  uploadedById  String?
+  uploadedBy    User?            @relation(fields: [uploadedById], references: [id])
+  createdAt     DateTime         @default(now())
+
+  snagOpenFor   Snag? @relation("SnagOpenPhoto")
+  snagClosedFor Snag? @relation("SnagClosedPhoto")
+}
+
+model Snag {
+  id            String     @id @default(cuid())
+  pmProjectId   String
+  pmProject     PmProject  @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  description   String
+  status        SnagStatus @default(OPEN)
+  openPhotoId   String     @unique
+  openPhoto     PmDocument @relation("SnagOpenPhoto", fields: [openPhotoId], references: [id])
+  closedPhotoId String?    @unique
+  closedPhoto   PmDocument? @relation("SnagClosedPhoto", fields: [closedPhotoId], references: [id])
+  createdById   String?
+  createdBy     User?      @relation(fields: [createdById], references: [id])
+  createdAt     DateTime   @default(now())
+  closedAt      DateTime?
 }
 
 model ScheduleItem {

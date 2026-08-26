@@ -103,6 +103,7 @@ export const PM_DOC_CATEGORIES = [
   "DESIGN",
   "COMMERCIAL",
   "SITE_WORKS",
+  "OPERATIONS",
 ] as const;
 
 export type PmDocCategory = (typeof PM_DOC_CATEGORIES)[number];
@@ -112,7 +113,48 @@ export const PM_DOC_CATEGORY_LABELS: Record<PmDocCategory, string> = {
   DESIGN: "Design",
   COMMERCIAL: "Commercial",
   SITE_WORKS: "Site Works",
+  OPERATIONS: "Operations",
 };
+
+export const UPLOAD_MODES = ["SINGLE", "MULTIPLE"] as const;
+export type UploadMode = (typeof UPLOAD_MODES)[number];
+
+export const DEFAULT_PM_SUBSECTIONS: {
+  category: PmDocCategory;
+  alsoInCategory?: PmDocCategory;
+  name: string;
+  mode: UploadMode;
+}[] = [
+  { category: "PROCUREMENT", alsoInCategory: "DESIGN", name: "Material Register", mode: "SINGLE" },
+  { category: "PROCUREMENT", name: "Procurement Schedule", mode: "SINGLE" },
+  { category: "PROCUREMENT", name: "Purchase Orders", mode: "MULTIPLE" },
+  { category: "PROCUREMENT", name: "Supplier Quotations", mode: "MULTIPLE" },
+  { category: "PROCUREMENT", name: "Delivery Register", mode: "SINGLE" },
+  { category: "PROCUREMENT", name: "Approved Submittals", mode: "MULTIPLE" },
+
+  { category: "DESIGN", name: "Drawing Register", mode: "SINGLE" },
+  { category: "DESIGN", name: "Drawings", mode: "MULTIPLE" },
+  { category: "DESIGN", name: "TDS Sheets", mode: "MULTIPLE" },
+  { category: "DESIGN", name: "Design Approvals", mode: "MULTIPLE" },
+
+  { category: "COMMERCIAL", name: "Contracts", mode: "MULTIPLE" },
+  { category: "COMMERCIAL", name: "Variations / Change Orders", mode: "MULTIPLE" },
+  { category: "COMMERCIAL", name: "Invoices", mode: "MULTIPLE" },
+  { category: "COMMERCIAL", name: "Payment Certificates", mode: "MULTIPLE" },
+  { category: "COMMERCIAL", name: "Cost Reports", mode: "SINGLE" },
+
+  { category: "SITE_WORKS", name: "Daily Site Diary", mode: "MULTIPLE" },
+  { category: "SITE_WORKS", name: "Site Photos", mode: "MULTIPLE" },
+  { category: "SITE_WORKS", name: "Inspection Requests", mode: "MULTIPLE" },
+  { category: "SITE_WORKS", name: "Method Statements / RAMS", mode: "MULTIPLE" },
+  { category: "SITE_WORKS", name: "Site Instructions", mode: "MULTIPLE" },
+
+  { category: "OPERATIONS", name: "Program / Master Schedule", mode: "SINGLE" },
+  { category: "OPERATIONS", name: "7-Day Look Ahead", mode: "SINGLE" },
+  { category: "OPERATIONS", name: "Weekly Report", mode: "MULTIPLE" },
+  { category: "OPERATIONS", name: "Monthly Report", mode: "MULTIPLE" },
+  { category: "OPERATIONS", name: "Meeting Minutes", mode: "MULTIPLE" },
+];
 
 export function formatNumber(value: number | null | undefined) {
   if (value === null || value === undefined) return "—";

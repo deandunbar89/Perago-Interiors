@@ -20,6 +20,11 @@ export default async function PmProjectPage({
         subtasks: { orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }] },
         notes: { orderBy: { createdAt: "desc" }, include: { author: true } },
         pmDocuments: { include: { uploadedBy: true }, orderBy: { createdAt: "desc" } },
+        docSubsections: { orderBy: { sortOrder: "asc" } },
+        snags: {
+          orderBy: { createdAt: "desc" },
+          include: { openPhoto: true, closedPhoto: true },
+        },
       },
     }),
     prisma.client.findMany({ orderBy: { name: "asc" } }),
