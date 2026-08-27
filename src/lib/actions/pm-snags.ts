@@ -53,6 +53,7 @@ export async function createSnag(pmProjectId: string, formData: FormData) {
   });
 
   revalidatePath(`/pm/projects/${pmProjectId}`);
+  revalidatePath("/snags");
   return { success: true };
 }
 
@@ -83,6 +84,7 @@ export async function closeSnag(pmProjectId: string, snagId: string, formData: F
   });
 
   revalidatePath(`/pm/projects/${pmProjectId}`);
+  revalidatePath("/snags");
   return { success: true };
 }
 
@@ -104,6 +106,7 @@ export async function deleteSnag(pmProjectId: string, snagId: string) {
   if (snag.closedPhoto) await deleteUploadedFile(`pm-${pmProjectId}`, snag.closedPhoto.storedName);
 
   revalidatePath(`/pm/projects/${pmProjectId}`);
+  revalidatePath("/snags");
 }
 
 async function requireAuth() {

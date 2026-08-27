@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { Client, Vendor } from "@prisma/client";
 import type { PmProjectDetail } from "./types";
 import DashboardTab from "./dashboard-tab";
@@ -36,7 +37,10 @@ export default function Tabs({
   clients: Client[];
   allVendors: Vendor[];
 }) {
-  const [active, setActive] = useState<TabKey>("dashboard");
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const initialTab = TABS.some((t) => t.key === tabParam) ? (tabParam as TabKey) : "dashboard";
+  const [active, setActive] = useState<TabKey>(initialTab);
 
   return (
     <div>
