@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Client, Contractor } from "@prisma/client";
+import type { Client, Vendor } from "@prisma/client";
 import type { PmProjectDetail } from "./types";
 import DashboardTab from "./dashboard-tab";
 import ScheduleTab from "./schedule-tab";
@@ -9,6 +9,7 @@ import TasksTab from "./tasks-tab";
 import NotesTab from "./notes-tab";
 import CategoryTab from "./category-tab";
 import SnagsTab from "./snags-tab";
+import ProjectVendorsTab from "./project-vendors-tab";
 
 const TABS = [
   { key: "dashboard", label: "Dashboard" },
@@ -19,6 +20,7 @@ const TABS = [
   { key: "commercial", label: "Commercial" },
   { key: "procurement", label: "Procurement" },
   { key: "site-works", label: "Site Works" },
+  { key: "vendors", label: "Vendors" },
   { key: "snags", label: "Snags" },
   { key: "notes", label: "Notes" },
 ] as const;
@@ -28,22 +30,22 @@ type TabKey = (typeof TABS)[number]["key"];
 export default function Tabs({
   project,
   clients,
-  contractors,
+  allVendors,
 }: {
   project: PmProjectDetail;
   clients: Client[];
-  contractors: Contractor[];
+  allVendors: Vendor[];
 }) {
   const [active, setActive] = useState<TabKey>("dashboard");
 
   return (
     <div>
-      <div className="mb-6 flex gap-1 border-b border-slate-200">
+      <div className="mb-6 flex gap-1 overflow-x-auto border-b border-slate-200">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActive(tab.key)}
-            className={`relative px-4 py-2.5 text-sm font-medium transition ${
+            className={`relative shrink-0 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition ${
               active === tab.key ? "text-slate-900" : "text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -53,6 +55,9 @@ export default function Tabs({
             )}
             {tab.key === "tasks" && project.subtasks.length > 0 && (
               <span className="ml-1.5 text-xs text-slate-400">{project.subtasks.length}</span>
+            )}
+            {tab.key === "vendors" && project.vendors.length > 0 && (
+              <span className="ml-1.5 text-xs text-slate-400">{project.vendors.length}</span>
             )}
             {tab.key === "snags" && project.snags.some((s) => s.status === "OPEN") && (
               <span className="ml-1.5 text-xs text-slate-400">
@@ -77,7 +82,8 @@ export default function Tabs({
       {active === "commercial" && <CategoryTab project={project} category="COMMERCIAL" />}
       {active === "procurement" && <CategoryTab project={project} category="PROCUREMENT" />}
       {active === "site-works" && <CategoryTab project={project} category="SITE_WORKS" />}
-      {active === "snags" && <SnagsTab project={project} contractors={contractors} />}
+      {active === "vendors" && <ProjectVendorsTab project={project} allVendors={allVendors} />}
+      {active === "snags" && <SnagsTab project={project} allVendors={allVendors} />}
       {active === "notes" && <NotesTab project={project} />}
     </div>
   );

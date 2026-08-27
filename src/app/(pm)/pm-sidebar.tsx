@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CheckSquare, ChevronDown, ChevronRight, Flag, HardHat, LayoutGrid, LogOut, Plus } from "lucide-react";
+import { CheckSquare, ChevronDown, ChevronRight, Flag, LayoutGrid, LogOut, Plus } from "lucide-react";
 import { signOutAction } from "../(app)/actions";
 
 const EXPANDED_KEY = "tendercrm.pm.sidebar.projectsExpanded";
@@ -132,15 +132,6 @@ export default function PmSidebar({
         >
           <CheckSquare size={17} />
           Tasks
-        </Link>
-        <Link
-          href="/pm/contractors"
-          className={`mb-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
-            pathname === "/pm/contractors" ? "bg-gold/15 text-gold" : "text-white/60 hover:bg-white/5 hover:text-white/90"
-          }`}
-        >
-          <HardHat size={17} />
-          Contractors
         </Link>
       </nav>
 

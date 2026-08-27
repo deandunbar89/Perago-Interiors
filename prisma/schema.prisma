@@ -107,7 +107,25 @@ enum Trade {
   GLAZING
   CIVIL_STRUCTURAL
   FURNITURE_JOINERY
+  TILING
   OTHER
+}
+
+enum VendorType {
+  SUPPLIER
+  CONTRACTOR
+}
+
+enum VendorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum VendorDocType {
+  INVOICE
+  PURCHASE_ORDER
+  LPO
+  QUOTE
 }
 
 model User {
@@ -349,6 +367,7 @@ model PmProject {
   docSubsections PmDocSubsection[]
   notes         Note[]
   snags         Snag[]
+  vendors       PmProjectVendor[]
 }
 
 model PmDocSubsection {
@@ -368,19 +387,22 @@ model PmDocSubsection {
 }
 
 model PmDocument {
-  id            String           @id @default(cuid())
-  pmProjectId   String
-  pmProject     PmProject        @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
-  category      PmDocCategory
-  subsectionId  String?
-  subsection    PmDocSubsection? @relation(fields: [subsectionId], references: [id], onDelete: Cascade)
-  originalName  String
-  storedName    String
-  mimeType      String
-  size          Int
-  uploadedById  String?
-  uploadedBy    User?            @relation(fields: [uploadedById], references: [id])
-  createdAt     DateTime         @default(now())
+  id                String           @id @default(cuid())
+  pmProjectId       String
+  pmProject         PmProject        @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  category          PmDocCategory
+  subsectionId      String?
+  subsection        PmDocSubsection? @relation(fields: [subsectionId], references: [id], onDelete: Cascade)
+  pmProjectVendorId String?
+  pmProjectVendor   PmProjectVendor? @relation(fields: [pmProjectVendorId], references: [id], onDelete: Cascade)
+  vendorDocType     VendorDocType?
+  originalName      String
+  storedName        String
+  mimeType          String
+  size              Int
+  uploadedById      String?
+  uploadedBy        User?            @relation(fields: [uploadedById], references: [id])
+  createdAt         DateTime         @default(now())
 
   snagOpenFor   Snag? @relation("SnagOpenPhoto")
   snagClosedFor Snag? @relation("SnagClosedPhoto")
@@ -396,8 +418,8 @@ model Snag {
   category      SnagCategory @default(SNAG)
   trade         Trade?
   location      String?
-  contractorId  String?
-  contractor    Contractor?  @relation(fields: [contractorId], references: [id])
+  vendorId      String?
+  vendor        Vendor?      @relation(fields: [vendorId], references: [id])
   openPhotoId   String       @unique
   openPhoto     PmDocument   @relation("SnagOpenPhoto", fields: [openPhotoId], references: [id])
   closedPhotoId String?      @unique
@@ -408,15 +430,40 @@ model Snag {
   closedAt      DateTime?
 }
 
-model Contractor {
-  id        String   @id @default(cuid())
-  name      String
-  trade     Trade?
-  phone     String?
-  email     String?
-  createdAt DateTime @default(now())
+model Vendor {
+  id          String       @id @default(cuid())
+  name        String
+  type        VendorType
+  trade       Trade?
+  status      VendorStatus @default(ACTIVE)
+  contactName String?
+  phone       String?
+  email       String?
+  address     String?
+  website     String?
+  trnNumber   String?
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
-  snags Snag[]
+  snags       Snag[]
+  pmProjects  PmProjectVendor[]
+}
+
+/// A vendor engaged on a specific PM project — its scope of work there, with its
+/// own place to file invoices, POs, LPOs and quotes tied to that engagement.
+model PmProjectVendor {
+  id          String    @id @default(cuid())
+  pmProjectId String
+  pmProject   PmProject @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  vendorId    String
+  vendor      Vendor    @relation(fields: [vendorId], references: [id])
+  scope       String?
+  createdAt   DateTime  @default(now())
+
+  documents PmDocument[]
+
+  @@unique([pmProjectId, vendorId])
 }
 
 model ScheduleItem {

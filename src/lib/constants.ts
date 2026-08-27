@@ -167,6 +167,7 @@ export const TRADES = [
   "GLAZING",
   "CIVIL_STRUCTURAL",
   "FURNITURE_JOINERY",
+  "TILING",
   "OTHER",
 ] as const;
 
@@ -183,7 +184,34 @@ export const TRADE_LABELS: Record<Trade, string> = {
   GLAZING: "Glazing",
   CIVIL_STRUCTURAL: "Civil / Structural",
   FURNITURE_JOINERY: "Furniture & Joinery",
+  TILING: "Tiling",
   OTHER: "Other",
+};
+
+export const VENDOR_TYPES = ["SUPPLIER", "CONTRACTOR"] as const;
+export type VendorType = (typeof VENDOR_TYPES)[number];
+
+export const VENDOR_TYPE_LABELS: Record<VendorType, string> = {
+  SUPPLIER: "Supplier",
+  CONTRACTOR: "Contractor",
+};
+
+export const VENDOR_STATUSES = ["ACTIVE", "INACTIVE"] as const;
+export type VendorStatus = (typeof VENDOR_STATUSES)[number];
+
+export const VENDOR_STATUS_LABELS: Record<VendorStatus, string> = {
+  ACTIVE: "Active",
+  INACTIVE: "Inactive",
+};
+
+export const VENDOR_DOC_TYPES = ["INVOICE", "PURCHASE_ORDER", "LPO", "QUOTE"] as const;
+export type VendorDocType = (typeof VENDOR_DOC_TYPES)[number];
+
+export const VENDOR_DOC_TYPE_LABELS: Record<VendorDocType, string> = {
+  INVOICE: "Invoices",
+  PURCHASE_ORDER: "Purchase Orders",
+  LPO: "LPOs",
+  QUOTE: "Quotes",
 };
 
 export const SNAG_PRIORITIES = ["LOW", "MEDIUM", "HIGH"] as const;

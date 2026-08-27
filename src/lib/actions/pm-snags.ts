@@ -23,7 +23,7 @@ export async function createSnag(pmProjectId: string, formData: FormData) {
   const category = (formData.get("category") as SnagCategory) || "SNAG";
   const trade = (formData.get("trade") as Trade) || null;
   const location = (formData.get("location") as string)?.trim() || null;
-  const contractorId = (formData.get("contractorId") as string) || null;
+  const vendorId = (formData.get("vendorId") as string) || null;
 
   const { storedName, size } = await saveUploadedFile(photo, `pm-${pmProjectId}`);
   const openPhoto = await prisma.pmDocument.create({
@@ -46,7 +46,7 @@ export async function createSnag(pmProjectId: string, formData: FormData) {
       category,
       trade,
       location,
-      contractorId,
+      vendorId,
       openPhotoId: openPhoto.id,
       createdById: session.user.id,
     },

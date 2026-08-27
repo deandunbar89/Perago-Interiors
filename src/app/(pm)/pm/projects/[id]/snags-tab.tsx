@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { format } from "date-fns";
 import { Plus, Trash2, CheckCircle2 } from "lucide-react";
-import type { Contractor } from "@prisma/client";
+import type { Vendor } from "@prisma/client";
 import { createSnag, closeSnag, deleteSnag } from "@/lib/actions/pm-snags";
 import {
   SNAG_PRIORITIES,
@@ -96,11 +96,12 @@ function CloseSnagForm({ pmProjectId, snagId }: { pmProjectId: string; snagId: s
 
 export default function SnagsTab({
   project,
-  contractors,
+  allVendors,
 }: {
   project: PmProjectDetail;
-  contractors: Contractor[];
+  allVendors: Vendor[];
 }) {
+  const contractors = allVendors.filter((v) => v.type === "CONTRACTOR");
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -171,7 +172,7 @@ export default function SnagsTab({
                   </option>
                 ))}
               </select>
-              <select name="contractorId" defaultValue="" className={selectClass}>
+              <select name="vendorId" defaultValue="" className={selectClass}>
                 <option value="">No contractor assigned</option>
                 {contractors.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -243,7 +244,7 @@ export default function SnagsTab({
                     <p className="text-sm text-slate-800">{snag.description}</p>
                     <p className="mt-1 text-xs text-slate-400">
                       {snag.location && <span>{snag.location} · </span>}
-                      {snag.contractor && <span>{snag.contractor.name} · </span>}
+                      {snag.vendor && <span>{snag.vendor.name} · </span>}
                       Raised {format(snag.createdAt, "MMM d, yyyy")}
                     </p>
                     <div className="mt-2 flex items-center gap-2">
@@ -281,7 +282,7 @@ export default function SnagsTab({
                     {snag.description}
                   </p>
                   <p className="mt-1 text-xs text-slate-400">
-                    {snag.contractor && <span>{snag.contractor.name} · </span>}
+                    {snag.vendor && <span>{snag.vendor.name} · </span>}
                     Closed {snag.closedAt ? format(snag.closedAt, "MMM d, yyyy") : ""}
                   </p>
                   <button
