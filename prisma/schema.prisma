@@ -148,6 +148,7 @@ model User {
   pmDocuments PmDocument[]
   pushSubscriptions PushSubscription[]
   snags       Snag[]
+  vendorDocuments VendorDocument[]
 }
 
 model PushSubscription {
@@ -446,8 +447,29 @@ model Vendor {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  tradeLicenseDocId String?         @unique
+  tradeLicenseDoc   VendorDocument? @relation("VendorTradeLicense", fields: [tradeLicenseDocId], references: [id])
+  trnCertDocId      String?         @unique
+  trnCertDoc        VendorDocument? @relation("VendorTrnCert", fields: [trnCertDocId], references: [id])
+
   snags       Snag[]
   pmProjects  PmProjectVendor[]
+}
+
+/// Registration documents for a vendor (trade license, TRN certificate) — not tied
+/// to any project, just the vendor's own record.
+model VendorDocument {
+  id           String   @id @default(cuid())
+  originalName String
+  storedName   String
+  mimeType     String
+  size         Int
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+
+  tradeLicenseFor Vendor? @relation("VendorTradeLicense")
+  trnCertFor      Vendor? @relation("VendorTrnCert")
 }
 
 /// A vendor engaged on a specific PM project — its scope of work there, with its

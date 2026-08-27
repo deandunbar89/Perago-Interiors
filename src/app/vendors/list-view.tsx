@@ -1,8 +1,8 @@
 "use client";
 
-import type { Vendor } from "@prisma/client";
 import { Mail, Phone, Edit2, Trash2 } from "lucide-react";
 import { TRADE_LABELS, VENDOR_TYPE_LABELS } from "@/lib/constants";
+import type { VendorWithDocs } from "./vendor-form";
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
   SUPPLIER: { bg: "bg-blue-50", text: "text-blue-700" },
@@ -14,8 +14,8 @@ export default function ListView({
   onEdit,
   onDelete,
 }: {
-  vendors: Vendor[];
-  onEdit: (vendor: Vendor) => void;
+  vendors: VendorWithDocs[];
+  onEdit: (vendor: VendorWithDocs) => void;
   onDelete: (vendorId: string) => void;
 }) {
   if (vendors.length === 0) {

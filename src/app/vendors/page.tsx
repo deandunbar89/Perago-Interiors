@@ -4,7 +4,10 @@ import VendorsExplorer from "./vendors-explorer";
 export const dynamic = "force-dynamic";
 
 export default async function VendorsPage() {
-  const vendors = await prisma.vendor.findMany({ orderBy: { name: "asc" } });
+  const vendors = await prisma.vendor.findMany({
+    orderBy: { name: "asc" },
+    include: { tradeLicenseDoc: true, trnCertDoc: true },
+  });
 
   return (
     <div className="p-8">

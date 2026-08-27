@@ -1,19 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import type { Vendor } from "@prisma/client";
 import { Plus, Search } from "lucide-react";
 import ViewSwitcher, { type ExplorerView } from "@/components/view-switcher";
 import Modal from "@/components/modal";
 import { deleteVendor } from "@/lib/actions/vendors";
 import { TRADES, TRADE_LABELS, VENDOR_TYPES, VENDOR_TYPE_LABELS } from "@/lib/constants";
-import VendorForm from "./vendor-form";
+import VendorForm, { type VendorWithDocs } from "./vendor-form";
 import ListView from "./list-view";
 import GridView from "./grid-view";
 
 const VIEW_KEY = "tendercrm.vendors.view";
 
-export default function VendorsExplorer({ vendors }: { vendors: Vendor[] }) {
+export default function VendorsExplorer({ vendors }: { vendors: VendorWithDocs[] }) {
   const [view, setView] = useState<ExplorerView>("list");
   const [ready, setReady] = useState(false);
   const [search, setSearch] = useState("");
@@ -21,7 +20,7 @@ export default function VendorsExplorer({ vendors }: { vendors: Vendor[] }) {
   const [tradeFilter, setTradeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingVendor, setEditingVendor] = useState<Vendor | undefined>(undefined);
+  const [editingVendor, setEditingVendor] = useState<VendorWithDocs | undefined>(undefined);
   const [, startTransition] = useTransition();
 
   useEffect(() => {
@@ -56,7 +55,7 @@ export default function VendorsExplorer({ vendors }: { vendors: Vendor[] }) {
     setModalOpen(true);
   }
 
-  function openEdit(vendor: Vendor) {
+  function openEdit(vendor: VendorWithDocs) {
     setEditingVendor(vendor);
     setModalOpen(true);
   }
