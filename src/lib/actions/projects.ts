@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { syncProjectDates } from "@/lib/tasks-sync";
-import { STAGE_LABELS, type Stage, type ProjectType, type Temperature } from "@/lib/constants";
+import { DOC_CATEGORIES, DOC_CATEGORY_LABELS, STAGE_LABELS, type Stage, type ProjectType, type Temperature } from "@/lib/constants";
+import { createCrmProjectDriveTemplate } from "@/lib/google-drive";
 
 async function requireUserId() {
   const session = await auth();
@@ -72,6 +73,7 @@ export async function createProject(_prevState: unknown, formData: FormData) {
   });
 
   await syncProjectDates(project.id);
+  void createCrmProjectDriveTemplate(project.title, DOC_CATEGORIES.map((c) => DOC_CATEGORY_LABELS[c]));
 
   revalidatePath("/dashboard");
   revalidatePath("/projects");
@@ -179,6 +181,7 @@ export async function quickCreateProjectForClient(clientId: string, formData: Fo
   });
 
   await syncProjectDates(project.id);
+  void createCrmProjectDriveTemplate(project.title, DOC_CATEGORIES.map((c) => DOC_CATEGORY_LABELS[c]));
 
   revalidatePath("/dashboard");
   revalidatePath("/projects");

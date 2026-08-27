@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/storage";
+import { mirrorToDrive } from "@/lib/google-drive";
+import { PM_DOC_CATEGORY_LABELS } from "@/lib/constants";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
@@ -11,7 +13,10 @@ export async function uploadPmDocument(pmProjectId: string, subsectionId: string
   const session = await auth();
   if (!session?.user?.id) throw new Error("Not authenticated");
 
-  const subsection = await prisma.pmDocSubsection.findUnique({ where: { id: subsectionId } });
+  const [subsection, pmProject] = await Promise.all([
+    prisma.pmDocSubsection.findUnique({ where: { id: subsectionId } }),
+    prisma.pmProject.findUnique({ where: { id: pmProjectId }, select: { title: true } }),
+  ]);
   if (!subsection || subsection.pmProjectId !== pmProjectId) return { error: "Section not found" };
 
   const files = formData.getAll("files") as File[];
@@ -50,6 +55,16 @@ export async function uploadPmDocument(pmProjectId: string, subsectionId: string
         uploadedById: session.user.id,
       },
     });
+
+    if (pmProject) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await mirrorToDrive(
+        ["PM Projects", pmProject.title, PM_DOC_CATEGORY_LABELS[subsection.category], subsection.name],
+        file.name,
+        file.type || "application/octet-stream",
+        buffer
+      );
+    }
   }
 
   revalidatePath(`/pm/projects/${pmProjectId}`);

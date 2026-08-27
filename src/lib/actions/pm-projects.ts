@@ -5,7 +5,16 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { syncPmProjectDates } from "@/lib/tasks-sync";
-import { DEFAULT_PM_SUBSECTIONS } from "@/lib/constants";
+import { DEFAULT_PM_SUBSECTIONS, PM_DOC_CATEGORY_LABELS } from "@/lib/constants";
+import { createPmProjectDriveTemplate } from "@/lib/google-drive";
+
+function driveTemplateSubsections() {
+  return DEFAULT_PM_SUBSECTIONS.map((s) => ({
+    category: PM_DOC_CATEGORY_LABELS[s.category],
+    alsoInCategory: s.alsoInCategory ? PM_DOC_CATEGORY_LABELS[s.alsoInCategory] : null,
+    name: s.name,
+  }));
+}
 
 async function requireUserId() {
   const session = await auth();
@@ -45,6 +54,7 @@ export async function createPmProject(_prevState: unknown, formData: FormData) {
   await prisma.pmDocSubsection.createMany({
     data: DEFAULT_PM_SUBSECTIONS.map((s, i) => ({ ...s, pmProjectId: pmProject.id, sortOrder: i })),
   });
+  void createPmProjectDriveTemplate(title, driveTemplateSubsections());
 
   await syncPmProjectDates(pmProject.id);
 
@@ -82,6 +92,7 @@ export async function promoteToPm(tenderProjectId: string) {
   await prisma.pmDocSubsection.createMany({
     data: DEFAULT_PM_SUBSECTIONS.map((s, i) => ({ ...s, pmProjectId: pmProject.id, sortOrder: i })),
   });
+  void createPmProjectDriveTemplate(tender.title, driveTemplateSubsections());
 
   revalidatePath("/pm");
   revalidatePath("/pm/projects");

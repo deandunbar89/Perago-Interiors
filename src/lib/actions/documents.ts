@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/storage";
-import type { DocCategory } from "@/lib/constants";
+import { mirrorToDrive } from "@/lib/google-drive";
+import { DOC_CATEGORY_LABELS, type DocCategory } from "@/lib/constants";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
@@ -24,6 +25,8 @@ export async function uploadDocument(projectId: string, formData: FormData) {
     }
   }
 
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { title: true } });
+
   for (const file of validFiles) {
     const { storedName, size } = await saveUploadedFile(file, projectId);
     await prisma.document.create({
@@ -37,6 +40,16 @@ export async function uploadDocument(projectId: string, formData: FormData) {
         uploadedById: session.user.id,
       },
     });
+
+    if (project) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await mirrorToDrive(
+        ["CRM Projects", project.title, DOC_CATEGORY_LABELS[category]],
+        file.name,
+        file.type || "application/octet-stream",
+        buffer
+      );
+    }
   }
 
   await prisma.activity.create({
