@@ -156,6 +156,60 @@ export const DEFAULT_PM_SUBSECTIONS: {
   { category: "OPERATIONS", name: "Meeting Minutes", mode: "MULTIPLE" },
 ];
 
+export const TRADES = [
+  "ELECTRICAL",
+  "PLUMBING",
+  "HVAC_MEP",
+  "CARPENTRY",
+  "PAINTING",
+  "FLOORING",
+  "CEILING",
+  "GLAZING",
+  "CIVIL_STRUCTURAL",
+  "FURNITURE_JOINERY",
+  "OTHER",
+] as const;
+
+export type Trade = (typeof TRADES)[number];
+
+export const TRADE_LABELS: Record<Trade, string> = {
+  ELECTRICAL: "Electrical",
+  PLUMBING: "Plumbing",
+  HVAC_MEP: "HVAC / MEP",
+  CARPENTRY: "Carpentry",
+  PAINTING: "Painting",
+  FLOORING: "Flooring",
+  CEILING: "Ceiling",
+  GLAZING: "Glazing",
+  CIVIL_STRUCTURAL: "Civil / Structural",
+  FURNITURE_JOINERY: "Furniture & Joinery",
+  OTHER: "Other",
+};
+
+export const SNAG_PRIORITIES = ["LOW", "MEDIUM", "HIGH"] as const;
+export type SnagPriority = (typeof SNAG_PRIORITIES)[number];
+
+export const SNAG_PRIORITY_LABELS: Record<SnagPriority, string> = {
+  LOW: "Low",
+  MEDIUM: "Medium",
+  HIGH: "High",
+};
+
+export const SNAG_PRIORITY_COLORS: Record<SnagPriority, { bg: string; text: string }> = {
+  LOW: { bg: "bg-slate-100", text: "text-slate-600" },
+  MEDIUM: { bg: "bg-amber-50", text: "text-amber-700" },
+  HIGH: { bg: "bg-red-50", text: "text-red-700" },
+};
+
+export const SNAG_CATEGORIES = ["SNAG", "DEFECT", "PUNCH_ITEM"] as const;
+export type SnagCategory = (typeof SNAG_CATEGORIES)[number];
+
+export const SNAG_CATEGORY_LABELS: Record<SnagCategory, string> = {
+  SNAG: "Snag",
+  DEFECT: "Defect",
+  PUNCH_ITEM: "Punch Item",
+};
+
 export function formatNumber(value: number | null | undefined) {
   if (value === null || value === undefined) return "—";
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);

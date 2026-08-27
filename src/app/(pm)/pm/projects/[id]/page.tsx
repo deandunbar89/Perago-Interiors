@@ -10,7 +10,7 @@ export default async function PmProjectPage({
 }) {
   const { id } = await params;
 
-  const [project, clients] = await Promise.all([
+  const [project, clients, contractors] = await Promise.all([
     prisma.pmProject.findUnique({
       where: { id },
       include: {
@@ -23,11 +23,12 @@ export default async function PmProjectPage({
         docSubsections: { orderBy: { sortOrder: "asc" } },
         snags: {
           orderBy: { createdAt: "desc" },
-          include: { openPhoto: true, closedPhoto: true },
+          include: { openPhoto: true, closedPhoto: true, contractor: true },
         },
       },
     }),
     prisma.client.findMany({ orderBy: { name: "asc" } }),
+    prisma.contractor.findMany({ orderBy: { name: "asc" } }),
   ]);
 
   if (!project) notFound();
@@ -35,7 +36,7 @@ export default async function PmProjectPage({
   return (
     <div className="p-8">
       <PmProjectHeader project={project} />
-      <Tabs project={project} clients={clients} />
+      <Tabs project={project} clients={clients} contractors={contractors} />
     </div>
   );
 }

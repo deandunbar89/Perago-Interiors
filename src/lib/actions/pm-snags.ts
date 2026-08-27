@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/storage";
+import type { SnagCategory, SnagPriority, Trade } from "@/lib/constants";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
@@ -17,6 +18,12 @@ export async function createSnag(pmProjectId: string, formData: FormData) {
   const photo = formData.get("photo") as File | null;
   if (!photo || photo.size === 0) return { error: "A photo is required to raise a snag" };
   if (photo.size > MAX_FILE_SIZE) return { error: "Photo exceeds the 100MB limit" };
+
+  const priority = (formData.get("priority") as SnagPriority) || "MEDIUM";
+  const category = (formData.get("category") as SnagCategory) || "SNAG";
+  const trade = (formData.get("trade") as Trade) || null;
+  const location = (formData.get("location") as string)?.trim() || null;
+  const contractorId = (formData.get("contractorId") as string) || null;
 
   const { storedName, size } = await saveUploadedFile(photo, `pm-${pmProjectId}`);
   const openPhoto = await prisma.pmDocument.create({
@@ -35,6 +42,11 @@ export async function createSnag(pmProjectId: string, formData: FormData) {
     data: {
       pmProjectId,
       description,
+      priority,
+      category,
+      trade,
+      location,
+      contractorId,
       openPhotoId: openPhoto.id,
       createdById: session.user.id,
     },

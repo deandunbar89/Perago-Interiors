@@ -1,6 +1,7 @@
 import type {
   Client,
   Contact,
+  Contractor,
   Note,
   PmDocSubsection,
   PmDocument,
@@ -20,5 +21,5 @@ export type PmProjectDetail = PmProject & {
   notes: (Note & { author: User | null })[];
   pmDocuments: (PmDocument & { uploadedBy: User | null })[];
   docSubsections: PmDocSubsection[];
-  snags: (Snag & { openPhoto: PmDocument; closedPhoto: PmDocument | null })[];
+  snags: (Snag & { openPhoto: PmDocument; closedPhoto: PmDocument | null; contractor: Contractor | null })[];
 };

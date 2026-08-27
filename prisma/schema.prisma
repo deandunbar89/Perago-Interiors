@@ -84,6 +84,32 @@ enum SnagStatus {
   CLOSED
 }
 
+enum SnagPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum SnagCategory {
+  SNAG
+  DEFECT
+  PUNCH_ITEM
+}
+
+enum Trade {
+  ELECTRICAL
+  PLUMBING
+  HVAC_MEP
+  CARPENTRY
+  PAINTING
+  FLOORING
+  CEILING
+  GLAZING
+  CIVIL_STRUCTURAL
+  FURNITURE_JOINERY
+  OTHER
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -361,19 +387,36 @@ model PmDocument {
 }
 
 model Snag {
-  id            String     @id @default(cuid())
+  id            String       @id @default(cuid())
   pmProjectId   String
-  pmProject     PmProject  @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  pmProject     PmProject    @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
   description   String
-  status        SnagStatus @default(OPEN)
-  openPhotoId   String     @unique
-  openPhoto     PmDocument @relation("SnagOpenPhoto", fields: [openPhotoId], references: [id])
-  closedPhotoId String?    @unique
-  closedPhoto   PmDocument? @relation("SnagClosedPhoto", fields: [closedPhotoId], references: [id])
+  status        SnagStatus   @default(OPEN)
+  priority      SnagPriority @default(MEDIUM)
+  category      SnagCategory @default(SNAG)
+  trade         Trade?
+  location      String?
+  contractorId  String?
+  contractor    Contractor?  @relation(fields: [contractorId], references: [id])
+  openPhotoId   String       @unique
+  openPhoto     PmDocument   @relation("SnagOpenPhoto", fields: [openPhotoId], references: [id])
+  closedPhotoId String?      @unique
+  closedPhoto   PmDocument?  @relation("SnagClosedPhoto", fields: [closedPhotoId], references: [id])
   createdById   String?
-  createdBy     User?      @relation(fields: [createdById], references: [id])
-  createdAt     DateTime   @default(now())
+  createdBy     User?        @relation(fields: [createdById], references: [id])
+  createdAt     DateTime     @default(now())
   closedAt      DateTime?
+}
+
+model Contractor {
+  id        String   @id @default(cuid())
+  name      String
+  trade     Trade?
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+
+  snags Snag[]
 }
 
 model ScheduleItem {
