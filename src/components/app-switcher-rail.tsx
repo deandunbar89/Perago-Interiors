@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, Bot, Building2, CheckSquare, Handshake, HardHat, Home, Settings } from "lucide-react";
+import { AlertTriangle, Bot, Building2, CheckSquare, Handshake, HardHat, Home, Settings, Users } from "lucide-react";
 import type { AppSection } from "@/lib/constants";
 import type { Access } from "@/lib/section-access";
 import NotificationSetup from "./notification-setup";
@@ -19,7 +19,7 @@ export default function AppSwitcherRail({
   active,
   access,
 }: {
-  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors" | "ai" | "settings";
+  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors" | "ai" | "team" | "settings";
   access: Access;
 }) {
   const visibleTools = TOOLS.filter((t) => t.section === null || access.sections.includes(t.section));
@@ -54,16 +54,28 @@ export default function AppSwitcherRail({
       })}
 
       {access.role === "ADMIN" && (
-        <Link
-          href="/settings"
-          title="Settings"
-          className={`flex w-12 flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition ${
-            active === "settings" ? "bg-gold/15 text-gold" : "text-white/50 hover:bg-white/5 hover:text-white/80"
-          }`}
-        >
-          <Settings size={18} />
-          Settings
-        </Link>
+        <>
+          <Link
+            href="/team"
+            title="Team"
+            className={`flex w-12 flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition ${
+              active === "team" ? "bg-gold/15 text-gold" : "text-white/50 hover:bg-white/5 hover:text-white/80"
+            }`}
+          >
+            <Users size={18} />
+            Team
+          </Link>
+          <Link
+            href="/settings"
+            title="Settings"
+            className={`flex w-12 flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition ${
+              active === "settings" ? "bg-gold/15 text-gold" : "text-white/50 hover:bg-white/5 hover:text-white/80"
+            }`}
+          >
+            <Settings size={18} />
+            Settings
+          </Link>
+        </>
       )}
 
       <div className="mt-auto">

@@ -2,6 +2,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import TeamPanel from "./team-panel";
 
+export const dynamic = "force-dynamic";
+
 export default async function TeamPage() {
   const session = await auth();
   const users = await prisma.user.findMany({ orderBy: { createdAt: "asc" } });

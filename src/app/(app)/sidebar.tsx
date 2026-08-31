@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, ClipboardList, Flag, CheckSquare, Building2, Users, LogOut } from "lucide-react";
+import { LayoutGrid, ClipboardList, Flag, CheckSquare, Building2, LogOut } from "lucide-react";
 import { signOutAction } from "./actions";
 
 const NAV = [
@@ -11,7 +11,6 @@ const NAV = [
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
   { href: "/projects", label: "Projects", icon: ClipboardList },
   { href: "/clients", label: "Clients", icon: Building2 },
-  { href: "/team", label: "Team", icon: Users },
 ];
 
 export default function Sidebar({
