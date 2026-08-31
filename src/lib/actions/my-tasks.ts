@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { findMentionedUsers } from "@/lib/mentions";
+import { notifyMentioned } from "@/lib/notify";
 import type { TaskScope } from "@prisma/client";
 
 async function requireUserId() {
@@ -42,6 +44,15 @@ export async function createTaskNote(subtaskId: string, formData: FormData) {
   if (!body) return { error: "Note cannot be empty" };
 
   await prisma.note.create({ data: { subtaskId, authorId: userId, body } });
+
+  const mentioned = await findMentionedUsers(body);
+  const subtask = await prisma.subtask.findUnique({ where: { id: subtaskId }, select: { title: true } });
+  await notifyMentioned(
+    mentioned.map((u) => u.id),
+    { title: `You were mentioned in "${subtask?.title ?? "a task"}"`, body, link: `/my-tasks/${subtaskId}` },
+    userId
+  );
+
   revalidatePath(`/my-tasks/${subtaskId}`);
   return { success: true };
 }

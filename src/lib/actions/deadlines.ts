@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { findMentionedUsers } from "@/lib/mentions";
+import { notifyMentioned } from "@/lib/notify";
 
 async function requireUserId() {
   const session = await auth();
@@ -34,6 +36,12 @@ export async function createDeadline(_prevState: unknown, formData: FormData) {
     await prisma.taskNote.create({
       data: { taskId: deadline.id, authorId: userId, body: note },
     });
+    const mentioned = await findMentionedUsers(note);
+    await notifyMentioned(
+      mentioned.map((u) => u.id),
+      { title: `You were mentioned in "${title}"`, body: note, link: `/deadlines/${deadline.id}` },
+      userId
+    );
   }
 
   revalidateDeadlinePaths();
@@ -72,6 +80,14 @@ export async function addDeadlineNote(deadlineId: string, formData: FormData) {
   await prisma.taskNote.create({
     data: { taskId: deadlineId, authorId: userId, body },
   });
+
+  const mentioned = await findMentionedUsers(body);
+  const deadline = await prisma.task.findUnique({ where: { id: deadlineId }, select: { title: true } });
+  await notifyMentioned(
+    mentioned.map((u) => u.id),
+    { title: `You were mentioned in "${deadline?.title ?? "a deadline"}"`, body, link: `/deadlines/${deadlineId}` },
+    userId
+  );
 
   revalidatePath(`/deadlines/${deadlineId}`);
   return { success: true };

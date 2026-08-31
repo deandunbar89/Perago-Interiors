@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import AutoRefresh from "@/components/auto-refresh";
+import NotificationBell from "@/components/notification-bell";
+import { auth } from "@/auth";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,7 +24,9 @@ export const viewport: Viewport = {
   themeColor: "#15130f",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const session = await auth();
+
   return (
     <html
       lang="en"
@@ -30,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <AutoRefresh />
+        {session?.user && <NotificationBell />}
         {children}
       </body>
     </html>

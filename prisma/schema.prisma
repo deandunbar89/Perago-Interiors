@@ -137,6 +137,8 @@ model User {
   /// Which top-level sections a MEMBER can open (CRM, PM, TASKS, SNAGS, VENDORS, AI).
   /// Ignored for ADMIN users, who always have full access.
   allowedSections String[] @default([])
+  /// Notification categories this user has turned off for themselves (NotificationType values).
+  mutedNotificationTypes String[] @default([])
   createdAt    DateTime @default(now())
 
   projects   Project[]  @relation("ProjectOwner")
@@ -152,6 +154,31 @@ model User {
   pushSubscriptions PushSubscription[]
   snags       Snag[]
   vendorDocuments VendorDocument[]
+  notifications Notification[]
+}
+
+enum NotificationType {
+  CRM
+  PM
+  TASKS
+  SNAGS
+  VENDORS
+  AI
+  MENTION
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  recipientId String
+  recipient   User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  type        NotificationType
+  title       String
+  body        String?
+  link        String
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  @@index([recipientId, read])
 }
 
 model PushSubscription {

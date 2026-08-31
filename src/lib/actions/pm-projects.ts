@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { syncPmProjectDates } from "@/lib/tasks-sync";
 import { DEFAULT_PM_SUBSECTIONS, PM_DOC_CATEGORY_LABELS } from "@/lib/constants";
 import { createPmProjectDriveTemplate } from "@/lib/google-drive";
+import { notifyAll } from "@/lib/notify";
 
 function driveTemplateSubsections() {
   return DEFAULT_PM_SUBSECTIONS.map((s) => ({
@@ -57,6 +58,7 @@ export async function createPmProject(_prevState: unknown, formData: FormData) {
   void createPmProjectDriveTemplate(title, driveTemplateSubsections());
 
   await syncPmProjectDates(pmProject.id);
+  await notifyAll("PM", { title: `New project — ${title}`, link: `/pm/projects/${pmProject.id}` }, userId);
 
   revalidatePath("/pm");
   revalidatePath("/pm/projects");
@@ -93,6 +95,11 @@ export async function promoteToPm(tenderProjectId: string) {
     data: DEFAULT_PM_SUBSECTIONS.map((s, i) => ({ ...s, pmProjectId: pmProject.id, sortOrder: i })),
   });
   void createPmProjectDriveTemplate(tender.title, driveTemplateSubsections());
+  await notifyAll(
+    "PM",
+    { title: `New project — ${tender.title}`, link: `/pm/projects/${pmProject.id}` },
+    userId
+  );
 
   revalidatePath("/pm");
   revalidatePath("/pm/projects");

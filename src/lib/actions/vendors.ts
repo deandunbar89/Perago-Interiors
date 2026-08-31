@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/storage";
 import { mirrorToDrive } from "@/lib/google-drive";
+import { notifyAll } from "@/lib/notify";
 import type { Trade, VendorStatus, VendorType } from "@/lib/constants";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
@@ -102,6 +103,8 @@ export async function createVendor(_prevState: unknown, formData: FormData) {
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Upload failed" };
   }
+
+  await notifyAll("VENDORS", { title: `New vendor added — ${vendor.name}`, link: "/vendors" }, userId);
 
   revalidatePath("/vendors");
   return { success: true };

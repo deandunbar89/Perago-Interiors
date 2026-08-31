@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { syncProjectDates } from "@/lib/tasks-sync";
 import { DOC_CATEGORIES, DOC_CATEGORY_LABELS, STAGE_LABELS, type Stage, type ProjectType, type Temperature } from "@/lib/constants";
 import { createCrmProjectDriveTemplate } from "@/lib/google-drive";
+import { notifyAll } from "@/lib/notify";
 
 async function requireUserId() {
   const session = await auth();
@@ -74,6 +75,7 @@ export async function createProject(_prevState: unknown, formData: FormData) {
 
   await syncProjectDates(project.id);
   void createCrmProjectDriveTemplate(project.title, DOC_CATEGORIES.map((c) => DOC_CATEGORY_LABELS[c]));
+  await notifyAll("CRM", { title: `New tender — ${project.title}`, link: `/projects/${project.id}` }, userId);
 
   revalidatePath("/dashboard");
   revalidatePath("/projects");
@@ -98,6 +100,14 @@ export async function updateProjectStage(projectId: string, stage: Stage) {
       message: `Stage changed to ${STAGE_LABELS[stage]}`,
     },
   });
+
+  if (stage === "WON" || stage === "LOST") {
+    await notifyAll(
+      "CRM",
+      { title: `Tender ${STAGE_LABELS[stage].toLowerCase()} — ${project.title}`, link: `/projects/${projectId}` },
+      userId
+    );
+  }
 
   revalidatePath("/dashboard");
   revalidatePath("/projects");
@@ -182,6 +192,7 @@ export async function quickCreateProjectForClient(clientId: string, formData: Fo
 
   await syncProjectDates(project.id);
   void createCrmProjectDriveTemplate(project.title, DOC_CATEGORIES.map((c) => DOC_CATEGORY_LABELS[c]));
+  await notifyAll("CRM", { title: `New tender — ${project.title}`, link: `/projects/${project.id}` }, userId);
 
   revalidatePath("/dashboard");
   revalidatePath("/projects");

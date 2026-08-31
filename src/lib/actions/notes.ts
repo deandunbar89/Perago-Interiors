@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { findMentionedUsers } from "@/lib/mentions";
+import { notifyMentioned } from "@/lib/notify";
 
 export async function createNote(projectId: string, formData: FormData) {
   const session = await auth();
@@ -23,6 +25,14 @@ export async function createNote(projectId: string, formData: FormData) {
       message: "Added a note",
     },
   });
+
+  const mentioned = await findMentionedUsers(body);
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { title: true } });
+  await notifyMentioned(
+    mentioned.map((u) => u.id),
+    { title: `You were mentioned in ${project?.title ?? "a tender"}`, body, link: `/projects/${projectId}` },
+    session.user.id
+  );
 
   revalidatePath(`/projects/${projectId}`);
   return { success: true };

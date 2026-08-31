@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt } from "@/lib/crypto";
+import { notifyAll } from "@/lib/notify";
 import type { AiSubscriptionStatus } from "@/lib/constants";
 
 async function requireUserId() {
@@ -25,7 +26,7 @@ function readFields(formData: FormData) {
 }
 
 export async function createAiSubscription(_prevState: unknown, formData: FormData) {
-  await requireUserId();
+  const userId = await requireUserId();
 
   const fields = readFields(formData);
   if (!fields.name) return { error: "Name is required" };
@@ -38,6 +39,8 @@ export async function createAiSubscription(_prevState: unknown, formData: FormDa
       passwordEnc: password ? encrypt(password) : null,
     },
   });
+
+  await notifyAll("AI", { title: `New AI subscription — ${fields.name}`, link: "/ai" }, userId);
 
   revalidatePath("/ai");
   return { success: true };

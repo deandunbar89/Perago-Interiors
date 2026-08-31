@@ -250,6 +250,14 @@ export const APP_SECTION_LABELS: Record<AppSection, string> = {
   AI: "AI",
 };
 
+export const NOTIFICATION_TYPES = [...APP_SECTIONS, "MENTION"] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+  ...APP_SECTION_LABELS,
+  MENTION: "Mentions (@you)",
+};
+
 export const AI_SUBSCRIPTION_STATUSES = ["ACTIVE", "CANCELLED"] as const;
 export type AiSubscriptionStatus = (typeof AI_SUBSCRIPTION_STATUSES)[number];
 

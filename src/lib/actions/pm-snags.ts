@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/storage";
+import { notifyAll } from "@/lib/notify";
 import type { SnagCategory, SnagPriority, Trade } from "@/lib/constants";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
@@ -52,6 +53,17 @@ export async function createSnag(pmProjectId: string, formData: FormData) {
     },
   });
 
+  const project = await prisma.pmProject.findUnique({ where: { id: pmProjectId }, select: { title: true } });
+  await notifyAll(
+    "SNAGS",
+    {
+      title: `New snag raised — ${project?.title ?? "a project"}`,
+      body: description,
+      link: `/pm/projects/${pmProjectId}?tab=snags`,
+    },
+    session.user.id
+  );
+
   revalidatePath(`/pm/projects/${pmProjectId}`);
   revalidatePath("/snags");
   return { success: true };
@@ -78,10 +90,21 @@ export async function closeSnag(pmProjectId: string, snagId: string, formData: F
     },
   });
 
-  await prisma.snag.update({
+  const snag = await prisma.snag.update({
     where: { id: snagId },
     data: { status: "CLOSED", closedAt: new Date(), closedPhotoId: closedPhoto.id },
   });
+
+  const project = await prisma.pmProject.findUnique({ where: { id: pmProjectId }, select: { title: true } });
+  await notifyAll(
+    "SNAGS",
+    {
+      title: `Snag closed — ${project?.title ?? "a project"}`,
+      body: snag.description,
+      link: `/pm/projects/${pmProjectId}?tab=snags`,
+    },
+    session.user.id
+  );
 
   revalidatePath(`/pm/projects/${pmProjectId}`);
   revalidatePath("/snags");
