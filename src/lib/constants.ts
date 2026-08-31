@@ -238,6 +238,14 @@ export const SNAG_CATEGORY_LABELS: Record<SnagCategory, string> = {
   PUNCH_ITEM: "Punch Item",
 };
 
+export const AI_SUBSCRIPTION_STATUSES = ["ACTIVE", "CANCELLED"] as const;
+export type AiSubscriptionStatus = (typeof AI_SUBSCRIPTION_STATUSES)[number];
+
+export const AI_SUBSCRIPTION_STATUS_LABELS: Record<AiSubscriptionStatus, string> = {
+  ACTIVE: "Active",
+  CANCELLED: "Cancelled",
+};
+
 export function formatNumber(value: number | null | undefined) {
   if (value === null || value === undefined) return "—";
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);

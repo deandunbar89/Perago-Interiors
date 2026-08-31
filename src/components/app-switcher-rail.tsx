@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, Building2, CheckSquare, Handshake, HardHat, Home } from "lucide-react";
+import { AlertTriangle, Bot, Building2, CheckSquare, Handshake, HardHat, Home } from "lucide-react";
 import NotificationSetup from "./notification-setup";
 
 const TOOLS = [
@@ -10,12 +10,13 @@ const TOOLS = [
   { key: "tasks", href: "/my-tasks", label: "Tasks", icon: CheckSquare },
   { key: "snags", href: "/snags", label: "Snags", icon: AlertTriangle },
   { key: "vendors", href: "/vendors", label: "Vendors", icon: Building2 },
+  { key: "ai", href: "/ai", label: "AI", icon: Bot },
 ] as const;
 
 export default function AppSwitcherRail({
   active,
 }: {
-  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors";
+  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors" | "ai";
 }) {
   return (
     <aside className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-white/10 bg-jet py-4">

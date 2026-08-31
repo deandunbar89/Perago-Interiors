@@ -488,6 +488,28 @@ model PmProjectVendor {
   @@unique([pmProjectId, vendorId])
 }
 
+enum AiSubscriptionStatus {
+  ACTIVE
+  CANCELLED
+}
+
+/// Tracks AI tool subscriptions (login, plan, renewal) for the team's own reference.
+/// passwordEnc is encrypted at rest (see src/lib/crypto.ts) — never stored in plain text.
+model AiSubscription {
+  id           String               @id @default(cuid())
+  name         String
+  url          String?
+  username     String?
+  passwordEnc  String?
+  plan         String?
+  cost         String?
+  renewalDate  DateTime?
+  notes        String?
+  status       AiSubscriptionStatus @default(ACTIVE)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+}
+
 model ScheduleItem {
   id              String              @id @default(cuid())
   pmProjectId     String
