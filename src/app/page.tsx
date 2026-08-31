@@ -3,9 +3,10 @@ import Link from "next/link";
 import { isPast, isToday, startOfDay } from "date-fns";
 import { Handshake, HardHat, CheckSquare } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { formatNumber } from "@/lib/constants";
+import { formatNumber, APP_SECTION_LABELS, type AppSection } from "@/lib/constants";
 import { matchesRange } from "@/lib/date-ranges";
 import AppSwitcherRail from "@/components/app-switcher-rail";
+import { getAccess } from "@/lib/section-access";
 import StatCard from "@/app/(app)/dashboard/stat-card";
 
 // The activity numbers are live counts, not static content — force this page to be
@@ -18,20 +19,23 @@ const TILES = [
     icon: Handshake,
     title: "CRM",
     description: "Track tenders through the pipeline, from lead to award.",
+    section: "CRM",
   },
   {
     href: "/pm",
     icon: HardHat,
     title: "Project Management",
     description: "Run awarded projects — schedules, documents, deadlines.",
+    section: "PM",
   },
   {
     href: "/my-tasks",
     icon: CheckSquare,
     title: "Tasks",
     description: "Everything actionable across CRM and PM, in one list.",
+    section: "TASKS",
   },
-] as const;
+] satisfies { href: string; icon: typeof Handshake; title: string; description: string; section: AppSection }[];
 
 const OPEN_STAGES = ["LEAD", "REVIEWING", "TENDER_SUBMITTED", "ON_HOLD"];
 
@@ -53,20 +57,37 @@ function StatGroup({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ denied?: string }>;
+}) {
+  const [access, { denied }] = await Promise.all([getAccess(), searchParams]);
+  const canCRM = access.sections.includes("CRM");
+  const canPM = access.sections.includes("PM");
+  const canTasks = access.sections.includes("TASKS");
+
   const [projects, pmProjects, crmDeadlines, pmDeadlines, openTasks] = await Promise.all([
-    prisma.project.findMany({ select: { stage: true, value: true } }),
-    prisma.pmProject.findMany({ select: { status: true, value: true } }),
-    prisma.task.findMany({
-      where: { scope: "CRM", status: "OPEN" },
-      select: { dueDate: true, status: true, subtasks: { select: { dueDate: true, status: true } } },
-    }),
-    prisma.task.findMany({
-      where: { scope: "PM", status: "OPEN" },
-      select: { dueDate: true, status: true, subtasks: { select: { dueDate: true, status: true } } },
-    }),
-    prisma.subtask.findMany({ where: { status: "OPEN" }, select: { scope: true, dueDate: true } }),
+    canCRM ? prisma.project.findMany({ select: { stage: true, value: true } }) : Promise.resolve([]),
+    canPM ? prisma.pmProject.findMany({ select: { status: true, value: true } }) : Promise.resolve([]),
+    canCRM
+      ? prisma.task.findMany({
+          where: { scope: "CRM", status: "OPEN" },
+          select: { dueDate: true, status: true, subtasks: { select: { dueDate: true, status: true } } },
+        })
+      : Promise.resolve([]),
+    canPM
+      ? prisma.task.findMany({
+          where: { scope: "PM", status: "OPEN" },
+          select: { dueDate: true, status: true, subtasks: { select: { dueDate: true, status: true } } },
+        })
+      : Promise.resolve([]),
+    canTasks
+      ? prisma.subtask.findMany({ where: { status: "OPEN" }, select: { scope: true, dueDate: true } })
+      : Promise.resolve([]),
   ]);
+
+  const visibleTiles = TILES.filter((t) => access.sections.includes(t.section));
 
   // CRM
   const openTenders = projects.filter((p) => OPEN_STAGES.includes(p.stage));
@@ -92,11 +113,22 @@ export default async function HomePage() {
   const crmOpenTasks = openTasks.filter((t) => t.scope === "CRM").length;
   const pmOpenTasks = openTasks.filter((t) => t.scope === "PM").length;
 
+  const deniedLabel =
+    denied && (APP_SECTION_LABELS as Record<string, string>)[denied]
+      ? (APP_SECTION_LABELS as Record<string, string>)[denied]
+      : null;
+
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <AppSwitcherRail active="home" />
+      <AppSwitcherRail active="home" access={access} />
       <main className="flex-1 min-w-0 p-10">
         <div className="mx-auto max-w-5xl">
+          {deniedLabel && (
+            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              You don&apos;t have access to {deniedLabel}. Ask an admin if you need it.
+            </div>
+          )}
+
           <div className="mb-10 flex flex-col items-center text-center">
             <Image
               src="/brand/icon-tile-champagne.png"
@@ -111,7 +143,7 @@ export default async function HomePage() {
           </div>
 
           <div className="mb-14 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {TILES.map(({ href, icon: Icon, title, description }) => (
+            {visibleTiles.map(({ href, icon: Icon, title, description }) => (
               <Link
                 key={href}
                 href={href}
@@ -127,44 +159,50 @@ export default async function HomePage() {
           </div>
 
           <div className="space-y-10">
-            <StatGroup label="CRM">
-              <StatCard label="Open Tenders" value={String(openTenders.length)} href="/dashboard" />
-              <StatCard label="Pipeline Value" value={formatNumber(pipelineValue)} currency="AED" href="/dashboard" />
-              <StatCard label="Win Rate" value={winRate === null ? "—" : `${winRate}%`} href="/dashboard" />
-              <StatCard label="Declined" value={String(declinedCount)} href="/projects?stage=DECLINED" />
-              <StatCard
-                label="Deadlines (14d)"
-                value={String(crmDeadlines14d)}
-                accent={crmDeadlines14d > 0 ? "warn" : undefined}
-                href="/deadlines?range=14days"
-              />
-            </StatGroup>
+            {canCRM && (
+              <StatGroup label="CRM">
+                <StatCard label="Open Tenders" value={String(openTenders.length)} href="/dashboard" />
+                <StatCard label="Pipeline Value" value={formatNumber(pipelineValue)} currency="AED" href="/dashboard" />
+                <StatCard label="Win Rate" value={winRate === null ? "—" : `${winRate}%`} href="/dashboard" />
+                <StatCard label="Declined" value={String(declinedCount)} href="/projects?stage=DECLINED" />
+                <StatCard
+                  label="Deadlines (14d)"
+                  value={String(crmDeadlines14d)}
+                  accent={crmDeadlines14d > 0 ? "warn" : undefined}
+                  href="/deadlines?range=14days"
+                />
+              </StatGroup>
+            )}
 
-            <StatGroup label="Project Management">
-              <StatCard label="Active Projects" value={String(activePm.length)} href="/pm/projects" />
-              <StatCard label="Active Value" value={formatNumber(activeValue)} currency="AED" href="/pm/projects" />
-              <StatCard label="On Hold" value={String(onHoldCount)} href="/pm/projects" />
-              <StatCard label="Total Projects" value={String(pmProjects.length)} href="/pm/projects" />
-              <StatCard
-                label="Deadlines (14d)"
-                value={String(pmDeadlines14d)}
-                accent={pmDeadlines14d > 0 ? "warn" : undefined}
-                href="/pm/deadlines?range=14days"
-              />
-            </StatGroup>
+            {canPM && (
+              <StatGroup label="Project Management">
+                <StatCard label="Active Projects" value={String(activePm.length)} href="/pm/projects" />
+                <StatCard label="Active Value" value={formatNumber(activeValue)} currency="AED" href="/pm/projects" />
+                <StatCard label="On Hold" value={String(onHoldCount)} href="/pm/projects" />
+                <StatCard label="Total Projects" value={String(pmProjects.length)} href="/pm/projects" />
+                <StatCard
+                  label="Deadlines (14d)"
+                  value={String(pmDeadlines14d)}
+                  accent={pmDeadlines14d > 0 ? "warn" : undefined}
+                  href="/pm/deadlines?range=14days"
+                />
+              </StatGroup>
+            )}
 
-            <StatGroup label="Tasks">
-              <StatCard label="Open Tasks" value={String(openTasks.length)} href="/my-tasks" />
-              <StatCard
-                label="Overdue"
-                value={String(overdueTasks)}
-                accent={overdueTasks > 0 ? "warn" : undefined}
-                href="/my-tasks?range=overdue"
-              />
-              <StatCard label="Due Today" value={String(dueTodayTasks)} href="/my-tasks?range=today" />
-              <StatCard label="CRM Tasks" value={String(crmOpenTasks)} href="/my-tasks" />
-              <StatCard label="PM Tasks" value={String(pmOpenTasks)} href="/my-tasks" />
-            </StatGroup>
+            {canTasks && (
+              <StatGroup label="Tasks">
+                <StatCard label="Open Tasks" value={String(openTasks.length)} href="/my-tasks" />
+                <StatCard
+                  label="Overdue"
+                  value={String(overdueTasks)}
+                  accent={overdueTasks > 0 ? "warn" : undefined}
+                  href="/my-tasks?range=overdue"
+                />
+                <StatCard label="Due Today" value={String(dueTodayTasks)} href="/my-tasks?range=today" />
+                <StatCard label="CRM Tasks" value={String(crmOpenTasks)} href="/my-tasks" />
+                <StatCard label="PM Tasks" value={String(pmOpenTasks)} href="/my-tasks" />
+              </StatGroup>
+            )}
           </div>
         </div>
       </main>

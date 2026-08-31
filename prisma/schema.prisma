@@ -134,6 +134,9 @@ model User {
   email        String   @unique
   passwordHash String
   role         Role     @default(MEMBER)
+  /// Which top-level sections a MEMBER can open (CRM, PM, TASKS, SNAGS, VENDORS, AI).
+  /// Ignored for ADMIN users, who always have full access.
+  allowedSections String[] @default([])
   createdAt    DateTime @default(now())
 
   projects   Project[]  @relation("ProjectOwner")

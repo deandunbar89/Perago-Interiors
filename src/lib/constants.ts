@@ -238,6 +238,18 @@ export const SNAG_CATEGORY_LABELS: Record<SnagCategory, string> = {
   PUNCH_ITEM: "Punch Item",
 };
 
+export const APP_SECTIONS = ["CRM", "PM", "TASKS", "SNAGS", "VENDORS", "AI"] as const;
+export type AppSection = (typeof APP_SECTIONS)[number];
+
+export const APP_SECTION_LABELS: Record<AppSection, string> = {
+  CRM: "CRM",
+  PM: "Project Management",
+  TASKS: "Tasks",
+  SNAGS: "Snags",
+  VENDORS: "Vendors",
+  AI: "AI",
+};
+
 export const AI_SUBSCRIPTION_STATUSES = ["ACTIVE", "CANCELLED"] as const;
 export type AiSubscriptionStatus = (typeof AI_SUBSCRIPTION_STATUSES)[number];
 

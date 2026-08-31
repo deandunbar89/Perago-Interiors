@@ -1,9 +1,12 @@
 import AppSwitcherRail from "@/components/app-switcher-rail";
+import { requireSectionAccess } from "@/lib/section-access";
 
-export default function VendorsLayout({ children }: { children: React.ReactNode }) {
+export default async function VendorsLayout({ children }: { children: React.ReactNode }) {
+  const access = await requireSectionAccess("VENDORS");
+
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <AppSwitcherRail active="vendors" />
+      <AppSwitcherRail active="vendors" access={access} />
       <main className="flex-1 min-w-0">{children}</main>
     </div>
   );

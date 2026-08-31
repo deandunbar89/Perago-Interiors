@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { APP_SECTIONS } from "@/lib/constants";
 
 async function requireAdmin() {
   const session = await auth();
@@ -27,7 +28,9 @@ export async function createUser(_prevState: unknown, formData: FormData) {
   if (existing) return { error: "A user with that email already exists" };
 
   const passwordHash = await bcrypt.hash(password, 10);
-  await prisma.user.create({ data: { name, email, passwordHash, role } });
+  await prisma.user.create({
+    data: { name, email, passwordHash, role, allowedSections: [...APP_SECTIONS] },
+  });
 
   revalidatePath("/team");
   return { success: true };

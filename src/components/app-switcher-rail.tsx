@@ -1,23 +1,29 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, Bot, Building2, CheckSquare, Handshake, HardHat, Home } from "lucide-react";
+import { AlertTriangle, Bot, Building2, CheckSquare, Handshake, HardHat, Home, Settings } from "lucide-react";
+import type { AppSection } from "@/lib/constants";
+import type { Access } from "@/lib/section-access";
 import NotificationSetup from "./notification-setup";
 
 const TOOLS = [
-  { key: "home", href: "/", label: "Home", icon: Home },
-  { key: "crm", href: "/dashboard", label: "CRM", icon: Handshake },
-  { key: "pm", href: "/pm", label: "PM", icon: HardHat },
-  { key: "tasks", href: "/my-tasks", label: "Tasks", icon: CheckSquare },
-  { key: "snags", href: "/snags", label: "Snags", icon: AlertTriangle },
-  { key: "vendors", href: "/vendors", label: "Vendors", icon: Building2 },
-  { key: "ai", href: "/ai", label: "AI", icon: Bot },
-] as const;
+  { key: "home", href: "/", label: "Home", icon: Home, section: null },
+  { key: "crm", href: "/dashboard", label: "CRM", icon: Handshake, section: "CRM" },
+  { key: "pm", href: "/pm", label: "PM", icon: HardHat, section: "PM" },
+  { key: "tasks", href: "/my-tasks", label: "Tasks", icon: CheckSquare, section: "TASKS" },
+  { key: "snags", href: "/snags", label: "Snags", icon: AlertTriangle, section: "SNAGS" },
+  { key: "vendors", href: "/vendors", label: "Vendors", icon: Building2, section: "VENDORS" },
+  { key: "ai", href: "/ai", label: "AI", icon: Bot, section: "AI" },
+] satisfies { key: string; href: string; label: string; icon: typeof Home; section: AppSection | null }[];
 
 export default function AppSwitcherRail({
   active,
+  access,
 }: {
-  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors" | "ai";
+  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors" | "ai" | "settings";
+  access: Access;
 }) {
+  const visibleTools = TOOLS.filter((t) => t.section === null || access.sections.includes(t.section));
+
   return (
     <aside className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-white/10 bg-jet py-4">
       <Link href="/" className="mb-4 flex h-8 w-8 items-center justify-center">
@@ -30,7 +36,7 @@ export default function AppSwitcherRail({
         />
       </Link>
 
-      {TOOLS.map(({ key, href, label, icon: Icon }) => {
+      {visibleTools.map(({ key, href, label, icon: Icon }) => {
         const isActive = key === active;
         return (
           <Link
@@ -46,6 +52,19 @@ export default function AppSwitcherRail({
           </Link>
         );
       })}
+
+      {access.role === "ADMIN" && (
+        <Link
+          href="/settings"
+          title="Settings"
+          className={`flex w-12 flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition ${
+            active === "settings" ? "bg-gold/15 text-gold" : "text-white/50 hover:bg-white/5 hover:text-white/80"
+          }`}
+        >
+          <Settings size={18} />
+          Settings
+        </Link>
+      )}
 
       <div className="mt-auto">
         <NotificationSetup />
