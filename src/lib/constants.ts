@@ -259,7 +259,7 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   MENTION: "Mentions (@you)",
 };
 
-export const REPORT_SECTIONS = ["SITE_PROGRESS", "COMMERCIAL", "PROCUREMENT", "HSE", "DESIGN"] as const;
+export const REPORT_SECTIONS = ["SITE_PROGRESS", "COMMERCIAL", "PROCUREMENT", "HSE", "DESIGN", "RISKS"] as const;
 export type ReportSection = (typeof REPORT_SECTIONS)[number];
 
 export const REPORT_SECTION_LABELS: Record<ReportSection, string> = {
@@ -268,6 +268,7 @@ export const REPORT_SECTION_LABELS: Record<ReportSection, string> = {
   PROCUREMENT: "Procurement",
   HSE: "HSE",
   DESIGN: "Design",
+  RISKS: "Risks",
 };
 
 export const REPORT_PERIOD_TYPES = ["WEEKLY", "MONTHLY"] as const;

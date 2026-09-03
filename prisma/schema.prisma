@@ -117,6 +117,7 @@ enum ReportSection {
   PROCUREMENT
   HSE
   DESIGN
+  RISKS
 }
 
 enum ReportPeriodType {

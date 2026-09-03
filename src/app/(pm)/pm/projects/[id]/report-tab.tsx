@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { format } from "date-fns";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus, Trash2, Pencil, FileDown } from "lucide-react";
 import { createReportEntry, updateReportEntry, deleteReportEntry } from "@/lib/actions/pm-report";
 import {
   REPORT_SECTIONS,
@@ -144,6 +144,51 @@ function EntryCard({ entry }: { entry: PmProjectDetail["reportEntries"][number] 
   );
 }
 
+function GenerateReportForm({ pmProjectId }: { pmProjectId: string }) {
+  const [periodType, setPeriodType] = useState<(typeof REPORT_PERIOD_TYPES)[number]>("WEEKLY");
+  const [periodStart, setPeriodStart] = useState("");
+
+  const href = periodStart
+    ? `/api/pm-report-export/${pmProjectId}?periodType=${periodType}&periodStart=${periodStart}`
+    : undefined;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+      <FileDown size={16} className="text-slate-400" />
+      <span className="text-sm font-medium text-slate-700">Generate branded report for</span>
+      <select
+        value={periodType}
+        onChange={(e) => setPeriodType(e.target.value as (typeof REPORT_PERIOD_TYPES)[number])}
+        className={`${fieldClass} w-auto`}
+      >
+        {REPORT_PERIOD_TYPES.map((p) => (
+          <option key={p} value={p}>
+            {REPORT_PERIOD_TYPE_LABELS[p]}
+          </option>
+        ))}
+      </select>
+      <input
+        type="date"
+        value={periodStart}
+        onChange={(e) => setPeriodStart(e.target.value)}
+        className={`${fieldClass} w-auto`}
+      />
+      <a
+        href={href}
+        aria-disabled={!href}
+        onClick={(e) => {
+          if (!href) e.preventDefault();
+        }}
+        className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition ${
+          href ? "bg-charcoal hover:bg-jet" : "cursor-not-allowed bg-slate-300"
+        }`}
+      >
+        Download .xlsx
+      </a>
+    </div>
+  );
+}
+
 export default function ReportTab({ project }: { project: PmProjectDetail }) {
   const [section, setSection] = useState<ReportSection>("SITE_PROGRESS");
   const [addOpen, setAddOpen] = useState(false);
@@ -154,6 +199,8 @@ export default function ReportTab({ project }: { project: PmProjectDetail }) {
 
   return (
     <div className="space-y-4">
+      <GenerateReportForm pmProjectId={project.id} />
+
       <div className="flex flex-wrap gap-1.5">
         {REPORT_SECTIONS.map((s) => (
           <button
