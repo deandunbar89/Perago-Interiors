@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, Bot, Building2, CheckSquare, Handshake, HardHat, Home, Settings, Users } from "lucide-react";
+import { AlertTriangle, BarChart3, Bot, Building2, CheckSquare, Handshake, HardHat, Home, Settings, Users } from "lucide-react";
 import type { AppSection } from "@/lib/constants";
 import type { Access } from "@/lib/section-access";
 import NotificationSetup from "./notification-setup";
@@ -13,19 +13,20 @@ const TOOLS = [
   { key: "snags", href: "/snags", label: "Snags", icon: AlertTriangle, section: "SNAGS" },
   { key: "vendors", href: "/vendors", label: "Vendors", icon: Building2, section: "VENDORS" },
   { key: "ai", href: "/ai", label: "AI", icon: Bot, section: "AI" },
+  { key: "reports", href: "/reports", label: "Reports", icon: BarChart3, section: "REPORTS" },
 ] satisfies { key: string; href: string; label: string; icon: typeof Home; section: AppSection | null }[];
 
 export default function AppSwitcherRail({
   active,
   access,
 }: {
-  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors" | "ai" | "team" | "settings";
+  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors" | "ai" | "reports" | "team" | "settings";
   access: Access;
 }) {
   const visibleTools = TOOLS.filter((t) => t.section === null || access.sections.includes(t.section));
 
   return (
-    <aside className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-white/10 bg-jet py-4">
+    <aside className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-white/10 bg-jet py-4 print:hidden">
       <Link href="/" className="mb-4 flex h-8 w-8 items-center justify-center">
         <Image
           src="/brand/icon-tile-champagne.png"

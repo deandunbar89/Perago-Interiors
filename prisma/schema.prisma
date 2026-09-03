@@ -111,6 +111,19 @@ enum Trade {
   OTHER
 }
 
+enum ReportSection {
+  SITE_PROGRESS
+  COMMERCIAL
+  PROCUREMENT
+  HSE
+  DESIGN
+}
+
+enum ReportPeriodType {
+  WEEKLY
+  MONTHLY
+}
+
 enum VendorType {
   SUPPLIER
   CONTRACTOR
@@ -155,6 +168,7 @@ model User {
   snags       Snag[]
   vendorDocuments VendorDocument[]
   notifications Notification[]
+  reportEntries   ProjectReportEntry[]
 }
 
 enum NotificationType {
@@ -164,6 +178,7 @@ enum NotificationType {
   SNAGS
   VENDORS
   AI
+  REPORTS
   MENTION
 }
 
@@ -399,6 +414,7 @@ model PmProject {
   notes         Note[]
   snags         Snag[]
   vendors       PmProjectVendor[]
+  reportEntries ProjectReportEntry[]
 }
 
 model PmDocSubsection {
@@ -459,6 +475,22 @@ model Snag {
   createdBy     User?        @relation(fields: [createdById], references: [id])
   createdAt     DateTime     @default(now())
   closedAt      DateTime?
+}
+
+/// A dated log entry a team member writes for one department of a project's
+/// weekly/monthly report (site progress, commercial, procurement, HSE, design).
+model ProjectReportEntry {
+  id          String           @id @default(cuid())
+  pmProjectId String
+  pmProject   PmProject        @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  section     ReportSection
+  periodType  ReportPeriodType
+  periodStart DateTime
+  content     String
+  createdById String?
+  createdBy   User?            @relation(fields: [createdById], references: [id])
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 }
 
 model Vendor {

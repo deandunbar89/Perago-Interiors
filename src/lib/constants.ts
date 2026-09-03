@@ -238,7 +238,7 @@ export const SNAG_CATEGORY_LABELS: Record<SnagCategory, string> = {
   PUNCH_ITEM: "Punch Item",
 };
 
-export const APP_SECTIONS = ["CRM", "PM", "TASKS", "SNAGS", "VENDORS", "AI"] as const;
+export const APP_SECTIONS = ["CRM", "PM", "TASKS", "SNAGS", "VENDORS", "AI", "REPORTS"] as const;
 export type AppSection = (typeof APP_SECTIONS)[number];
 
 export const APP_SECTION_LABELS: Record<AppSection, string> = {
@@ -248,6 +248,7 @@ export const APP_SECTION_LABELS: Record<AppSection, string> = {
   SNAGS: "Snags",
   VENDORS: "Vendors",
   AI: "AI",
+  REPORTS: "Reports",
 };
 
 export const NOTIFICATION_TYPES = [...APP_SECTIONS, "MENTION"] as const;
@@ -256,6 +257,25 @@ export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   ...APP_SECTION_LABELS,
   MENTION: "Mentions (@you)",
+};
+
+export const REPORT_SECTIONS = ["SITE_PROGRESS", "COMMERCIAL", "PROCUREMENT", "HSE", "DESIGN"] as const;
+export type ReportSection = (typeof REPORT_SECTIONS)[number];
+
+export const REPORT_SECTION_LABELS: Record<ReportSection, string> = {
+  SITE_PROGRESS: "Site Progress",
+  COMMERCIAL: "Commercial",
+  PROCUREMENT: "Procurement",
+  HSE: "HSE",
+  DESIGN: "Design",
+};
+
+export const REPORT_PERIOD_TYPES = ["WEEKLY", "MONTHLY"] as const;
+export type ReportPeriodType = (typeof REPORT_PERIOD_TYPES)[number];
+
+export const REPORT_PERIOD_TYPE_LABELS: Record<ReportPeriodType, string> = {
+  WEEKLY: "Weekly",
+  MONTHLY: "Monthly",
 };
 
 export const AI_SUBSCRIPTION_STATUSES = ["ACTIVE", "CANCELLED"] as const;
