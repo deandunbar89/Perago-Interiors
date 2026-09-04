@@ -12,6 +12,7 @@ import CategoryTab from "./category-tab";
 import SnagsTab from "./snags-tab";
 import ProjectVendorsTab from "./project-vendors-tab";
 import ReportTab from "./report-tab";
+import FinanceTab from "./finance-tab";
 
 const TABS = [
   { key: "dashboard", label: "Dashboard" },
@@ -23,6 +24,7 @@ const TABS = [
   { key: "procurement", label: "Procurement" },
   { key: "site-works", label: "Site Works" },
   { key: "vendors", label: "Vendors" },
+  { key: "finance", label: "Finance" },
   { key: "snags", label: "Snags" },
   { key: "report", label: "Report" },
   { key: "notes", label: "Notes" },
@@ -70,6 +72,9 @@ export default function Tabs({
                 {project.snags.filter((s) => s.status === "OPEN").length}
               </span>
             )}
+            {tab.key === "finance" && (project.orders.length > 0 || project.payments.length > 0) && (
+              <span className="ml-1.5 text-xs text-slate-400">{project.orders.length + project.payments.length}</span>
+            )}
             {tab.key === "report" && project.reportEntries.length > 0 && (
               <span className="ml-1.5 text-xs text-slate-400">{project.reportEntries.length}</span>
             )}
@@ -92,6 +97,7 @@ export default function Tabs({
       {active === "procurement" && <CategoryTab project={project} category="PROCUREMENT" />}
       {active === "site-works" && <CategoryTab project={project} category="SITE_WORKS" />}
       {active === "vendors" && <ProjectVendorsTab project={project} allVendors={allVendors} />}
+      {active === "finance" && <FinanceTab project={project} allVendors={allVendors} />}
       {active === "snags" && <SnagsTab project={project} allVendors={allVendors} />}
       {active === "report" && <ReportTab project={project} />}
       {active === "notes" && <NotesTab project={project} />}

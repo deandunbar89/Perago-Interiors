@@ -68,6 +68,8 @@ export async function buildProjectReportWorkbook(
         orderBy: { createdAt: "desc" },
       },
       vendors: { include: { vendor: true, documents: true } },
+      orders: { include: { vendor: true }, orderBy: { createdAt: "desc" } },
+      payments: { include: { vendor: true, order: true }, orderBy: { paidDate: "desc" } },
     },
   });
   if (!project) throw new Error("Project not found");
@@ -185,35 +187,75 @@ export async function buildProjectReportWorkbook(
   writeWrappedText(dash, r, 8, entriesBySection.PROCUREMENT?.[0]?.content ?? "");
   r += 2;
 
-  // Commercial update
+  // Commercial / financial update
   styleHeaderRow(dash, r, 8, "COMMERCIAL UPDATE — PAYMENTS / INVOICES");
   r++;
   writeWrappedText(dash, r, 8, entriesBySection.COMMERCIAL?.[0]?.content ?? "", 40);
   r += 2;
-  const invoiceRows = project.vendors.flatMap((pv) =>
-    pv.documents.filter((d) => d.vendorDocType === "INVOICE").map((d) => ({ vendor: pv.vendor.name, doc: d }))
-  );
-  if (invoiceRows.length > 0) {
-    styleTableHeader(dash, r, ["Vendor", "", "Invoice", "", "Uploaded", "", "Payment Status", ""]);
-    r++;
-    for (const { vendor, doc } of invoiceRows) {
-      dash.getCell(r, 1).value = vendor;
-      dash.mergeCells(r, 1, r, 2);
-      dash.mergeCells(r, 3, r, 4);
-      dash.getCell(r, 3).value = doc.originalName;
-      dash.mergeCells(r, 5, r, 6);
-      dash.getCell(r, 5).value = doc.createdAt.toLocaleDateString("en-GB");
-      dash.mergeCells(r, 7, r, 8);
-      dash.getCell(r, 7).value = "Pending";
-      for (let c = 1; c <= 8; c++) dash.getCell(r, c).font = { size: 10 };
-      r++;
-    }
-    dash.mergeCells(r, 1, r, 8);
-    dash.getCell(r, 1).value = "Payment Status is editable — update each row once confirmed.";
-    dash.getCell(r, 1).font = { italic: true, size: 9, color: { argb: "FF94A3B8" } };
+
+  const contractValue = project.value ?? 0;
+  const totalReceived = project.payments.filter((p) => p.direction === "RECEIVED").reduce((s, p) => s + p.amount, 0);
+  const totalCommitted = project.orders.reduce((s, o) => s + o.value, 0);
+  const totalPaid = project.payments.filter((p) => p.direction === "PAID").reduce((s, p) => s + p.amount, 0);
+  const financeStats: [string, string][] = [
+    ["Contract Value", `${formatNumber(contractValue)} ${project.currency}`],
+    ["Received", `${formatNumber(totalReceived)} ${project.currency}`],
+    ["Outstanding Receivable", `${formatNumber(Math.max(0, contractValue - totalReceived))} ${project.currency}`],
+    ["Committed to Suppliers", `${formatNumber(totalCommitted)} ${project.currency}`],
+    ["Paid to Suppliers", `${formatNumber(totalPaid)} ${project.currency}`],
+    ["Net Cash Position", `${formatNumber(totalReceived - totalPaid)} ${project.currency}`],
+  ];
+  for (const [label, value] of financeStats) {
+    dash.getCell(r, 1).value = label;
+    dash.getCell(r, 1).font = { bold: true, size: 10 };
+    dash.mergeCells(r, 2, r, 3);
+    dash.getCell(r, 2).value = value;
+    dash.getCell(r, 2).font = { size: 10 };
     r++;
   }
   r++;
+
+  if (project.orders.length > 0) {
+    dash.mergeCells(r, 1, r, 8);
+    dash.getCell(r, 1).value = "Supplier Orders";
+    dash.getCell(r, 1).font = { bold: true, size: 10 };
+    r++;
+    styleTableHeader(dash, r, ["Supplier", "", "Reference", "Value", "", "Date", "", ""]);
+    r++;
+    for (const o of project.orders) {
+      dash.mergeCells(r, 1, r, 2);
+      dash.getCell(r, 1).value = o.vendor?.name ?? "—";
+      dash.getCell(r, 3).value = o.reference ?? "—";
+      dash.mergeCells(r, 4, r, 5);
+      dash.getCell(r, 4).value = `${formatNumber(o.value)} ${o.currency}`;
+      dash.mergeCells(r, 6, r, 8);
+      dash.getCell(r, 6).value = o.orderDate ? o.orderDate.toLocaleDateString("en-GB") : "—";
+      for (let c = 1; c <= 8; c++) dash.getCell(r, c).font = { size: 10 };
+      r++;
+    }
+    r++;
+  }
+
+  if (project.payments.length > 0) {
+    dash.mergeCells(r, 1, r, 8);
+    dash.getCell(r, 1).value = "Payments";
+    dash.getCell(r, 1).font = { bold: true, size: 10 };
+    r++;
+    styleTableHeader(dash, r, ["Direction", "", "Supplier", "Amount", "", "Date", "", ""]);
+    r++;
+    for (const p of project.payments) {
+      dash.mergeCells(r, 1, r, 2);
+      dash.getCell(r, 1).value = p.direction === "RECEIVED" ? "Received from client" : "Paid to supplier";
+      dash.getCell(r, 3).value = p.vendor?.name ?? p.order?.reference ?? "—";
+      dash.mergeCells(r, 4, r, 5);
+      dash.getCell(r, 4).value = `${formatNumber(p.amount)} ${p.currency}`;
+      dash.mergeCells(r, 6, r, 8);
+      dash.getCell(r, 6).value = p.paidDate.toLocaleDateString("en-GB");
+      for (let c = 1; c <= 8; c++) dash.getCell(r, c).font = { size: 10 };
+      r++;
+    }
+    r++;
+  }
 
   // Areas of risk
   styleHeaderRow(dash, r, 8, "AREAS OF RISK");

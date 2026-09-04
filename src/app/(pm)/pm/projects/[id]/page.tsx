@@ -33,6 +33,14 @@ export default async function PmProjectPage({
           orderBy: { periodStart: "desc" },
           include: { createdBy: true },
         },
+        orders: {
+          orderBy: { createdAt: "desc" },
+          include: { vendor: true, document: true },
+        },
+        payments: {
+          orderBy: { paidDate: "desc" },
+          include: { vendor: true, order: true, document: true },
+        },
       },
     }),
     prisma.client.findMany({ orderBy: { name: "asc" } }),

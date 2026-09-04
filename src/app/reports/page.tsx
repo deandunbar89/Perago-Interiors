@@ -3,6 +3,7 @@ import PeriodPicker from "./period-picker";
 import TendersReport from "./tenders-report";
 import ProjectsReport from "./projects-report";
 import SnagsReport from "./snags-report";
+import FinanceReport from "./finance-report";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,14 @@ export default async function ReportsPage({
           Weekly and monthly summaries for tenders, projects and snags
         </p>
         <p className="hidden text-sm text-slate-500 print:block">
-          {category === "TENDERS" ? "Tenders" : category === "PROJECTS" ? "Projects" : "Snags"} report — {range.label}
+          {category === "TENDERS"
+            ? "Tenders"
+            : category === "PROJECTS"
+              ? "Projects"
+              : category === "SNAGS"
+                ? "Snags"
+                : "Finance"}{" "}
+          report — {range.label}
         </p>
       </div>
 
@@ -31,6 +39,7 @@ export default async function ReportsPage({
       {category === "TENDERS" && <TendersReport range={range} />}
       {category === "PROJECTS" && <ProjectsReport range={range} />}
       {category === "SNAGS" && <SnagsReport range={range} />}
+      {category === "FINANCE" && <FinanceReport range={range} />}
     </div>
   );
 }

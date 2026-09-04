@@ -279,6 +279,24 @@ export const REPORT_PERIOD_TYPE_LABELS: Record<ReportPeriodType, string> = {
   MONTHLY: "Monthly",
 };
 
+export const ORDER_TYPES = ["PO", "LPO", "CONTRACT", "QUOTE"] as const;
+export type OrderType = (typeof ORDER_TYPES)[number];
+
+export const ORDER_TYPE_LABELS: Record<OrderType, string> = {
+  PO: "Purchase Order",
+  LPO: "LPO",
+  CONTRACT: "Subcontract",
+  QUOTE: "Quote",
+};
+
+export const PAYMENT_DIRECTIONS = ["RECEIVED", "PAID"] as const;
+export type PaymentDirection = (typeof PAYMENT_DIRECTIONS)[number];
+
+export const PAYMENT_DIRECTION_LABELS: Record<PaymentDirection, string> = {
+  RECEIVED: "Received from client",
+  PAID: "Paid to supplier",
+};
+
 export const AI_SUBSCRIPTION_STATUSES = ["ACTIVE", "CANCELLED"] as const;
 export type AiSubscriptionStatus = (typeof AI_SUBSCRIPTION_STATUSES)[number];
 

@@ -7,6 +7,8 @@ import type {
   PmProject,
   PmProjectVendor,
   Project,
+  ProjectOrder,
+  ProjectPayment,
   ProjectReportEntry,
   ScheduleItem,
   Snag,
@@ -26,4 +28,6 @@ export type PmProjectDetail = PmProject & {
   snags: (Snag & { openPhoto: PmDocument; closedPhoto: PmDocument | null; vendor: Vendor | null })[];
   vendors: (PmProjectVendor & { vendor: Vendor; documents: PmDocument[] })[];
   reportEntries: (ProjectReportEntry & { createdBy: User | null })[];
+  orders: (ProjectOrder & { vendor: Vendor | null; document: PmDocument | null })[];
+  payments: (ProjectPayment & { vendor: Vendor | null; order: ProjectOrder | null; document: PmDocument | null })[];
 };

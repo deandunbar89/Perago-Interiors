@@ -170,6 +170,8 @@ model User {
   vendorDocuments VendorDocument[]
   notifications Notification[]
   reportEntries   ProjectReportEntry[]
+  financeOrders   ProjectOrder[]
+  financePayments ProjectPayment[]
 }
 
 enum NotificationType {
@@ -416,6 +418,8 @@ model PmProject {
   snags         Snag[]
   vendors       PmProjectVendor[]
   reportEntries ProjectReportEntry[]
+  orders        ProjectOrder[]
+  payments      ProjectPayment[]
 }
 
 model PmDocSubsection {
@@ -454,6 +458,8 @@ model PmDocument {
 
   snagOpenFor   Snag? @relation("SnagOpenPhoto")
   snagClosedFor Snag? @relation("SnagClosedPhoto")
+  orderFor      ProjectOrder?
+  paymentFor    ProjectPayment?
 }
 
 model Snag {
@@ -517,6 +523,8 @@ model Vendor {
 
   snags       Snag[]
   pmProjects  PmProjectVendor[]
+  orders      ProjectOrder[]
+  payments    ProjectPayment[]
 }
 
 /// Registration documents for a vendor (trade license, TRN certificate) — not tied
@@ -549,6 +557,63 @@ model PmProjectVendor {
   documents PmDocument[]
 
   @@unique([pmProjectId, vendorId])
+}
+
+enum OrderType {
+  PO
+  LPO
+  CONTRACT
+  QUOTE
+}
+
+enum PaymentDirection {
+  RECEIVED
+  PAID
+}
+
+/// A purchase order, LPO, subcontract or quote issued to a supplier for a project,
+/// with its committed value and the document itself attached.
+model ProjectOrder {
+  id          String     @id @default(cuid())
+  pmProjectId String
+  pmProject   PmProject  @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  vendorId    String?
+  vendor      Vendor?    @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  type        OrderType
+  reference   String?
+  description String?
+  value       Float
+  currency    String     @default("AED")
+  orderDate   DateTime?
+  documentId  String?     @unique
+  document    PmDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  createdById String?
+  createdBy   User?      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime   @default(now())
+
+  payments ProjectPayment[]
+}
+
+/// A single payment received from the client or paid to a supplier on a project,
+/// optionally tied to a specific order and with a proof-of-payment document.
+model ProjectPayment {
+  id          String           @id @default(cuid())
+  pmProjectId String
+  pmProject   PmProject        @relation(fields: [pmProjectId], references: [id], onDelete: Cascade)
+  direction   PaymentDirection
+  orderId     String?
+  order       ProjectOrder?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  vendorId    String?
+  vendor      Vendor?          @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  amount      Float
+  currency    String           @default("AED")
+  reference   String?
+  paidDate    DateTime
+  documentId  String?          @unique
+  document    PmDocument?      @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  createdById String?
+  createdBy   User?            @relation(fields: [createdById], references: [id])
+  createdAt   DateTime         @default(now())
 }
 
 enum AiSubscriptionStatus {
