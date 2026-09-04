@@ -8,7 +8,6 @@ const CATEGORIES = [
   { key: "TENDERS", label: "Tenders" },
   { key: "PROJECTS", label: "Projects" },
   { key: "SNAGS", label: "Snags" },
-  { key: "FINANCE", label: "Finance" },
 ] as const;
 
 export default function PeriodPicker({

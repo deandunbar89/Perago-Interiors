@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, BarChart3, Bot, Building2, CheckSquare, Handshake, HardHat, Home, Settings, Users } from "lucide-react";
+import { AlertTriangle, BarChart3, Bot, Building2, CheckSquare, DollarSign, Handshake, HardHat, Home, Settings, Users } from "lucide-react";
 import type { AppSection } from "@/lib/constants";
 import type { Access } from "@/lib/section-access";
 import NotificationSetup from "./notification-setup";
@@ -14,13 +14,14 @@ const TOOLS = [
   { key: "vendors", href: "/vendors", label: "Vendors", icon: Building2, section: "VENDORS" },
   { key: "ai", href: "/ai", label: "AI", icon: Bot, section: "AI" },
   { key: "reports", href: "/reports", label: "Reports", icon: BarChart3, section: "REPORTS" },
+  { key: "finance", href: "/finance", label: "Finance", icon: DollarSign, section: "FINANCE" },
 ] satisfies { key: string; href: string; label: string; icon: typeof Home; section: AppSection | null }[];
 
 export default function AppSwitcherRail({
   active,
   access,
 }: {
-  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors" | "ai" | "reports" | "team" | "settings";
+  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors" | "ai" | "reports" | "finance" | "team" | "settings";
   access: Access;
 }) {
   const visibleTools = TOOLS.filter((t) => t.section === null || access.sections.includes(t.section));

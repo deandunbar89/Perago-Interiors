@@ -156,7 +156,7 @@ export async function createPayment(pmProjectId: string, formData: FormData) {
   });
 
   await notifyAll(
-    "PM",
+    "FINANCE",
     {
       title: `${PAYMENT_DIRECTION_LABELS[direction]} — ${project.title} (${currency} ${amount.toLocaleString()})`,
       link: `/pm/projects/${pmProjectId}?tab=finance`,

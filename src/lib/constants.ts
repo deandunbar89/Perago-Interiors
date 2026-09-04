@@ -238,7 +238,7 @@ export const SNAG_CATEGORY_LABELS: Record<SnagCategory, string> = {
   PUNCH_ITEM: "Punch Item",
 };
 
-export const APP_SECTIONS = ["CRM", "PM", "TASKS", "SNAGS", "VENDORS", "AI", "REPORTS"] as const;
+export const APP_SECTIONS = ["CRM", "PM", "TASKS", "SNAGS", "VENDORS", "AI", "REPORTS", "FINANCE"] as const;
 export type AppSection = (typeof APP_SECTIONS)[number];
 
 export const APP_SECTION_LABELS: Record<AppSection, string> = {
@@ -249,6 +249,7 @@ export const APP_SECTION_LABELS: Record<AppSection, string> = {
   VENDORS: "Vendors",
   AI: "AI",
   REPORTS: "Reports",
+  FINANCE: "Finance",
 };
 
 export const NOTIFICATION_TYPES = [...APP_SECTIONS, "MENTION"] as const;
