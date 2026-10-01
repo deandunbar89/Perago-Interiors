@@ -36,6 +36,30 @@ export async function createUser(_prevState: unknown, formData: FormData) {
   return { success: true };
 }
 
+export async function changeOwnPassword(_prevState: unknown, formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Not authenticated");
+
+  const currentPassword = formData.get("currentPassword") as string;
+  const newPassword = formData.get("newPassword") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (!currentPassword || !newPassword || !confirmPassword) return { error: "All fields are required" };
+  if (newPassword.length < 8) return { error: "New password must be at least 8 characters" };
+  if (newPassword !== confirmPassword) return { error: "New passwords don't match" };
+
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user) return { error: "User not found" };
+
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) return { error: "Current password is incorrect" };
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+
+  return { success: true };
+}
+
 export async function deleteUser(userId: string) {
   const session = await auth();
   if (!session?.user?.id || session.user.role !== "ADMIN") {

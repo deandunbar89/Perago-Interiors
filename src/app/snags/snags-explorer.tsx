@@ -5,6 +5,7 @@ import { Plus, Search } from "lucide-react";
 import type { Vendor } from "@prisma/client";
 import ViewSwitcher, { type ExplorerView } from "@/components/view-switcher";
 import Modal from "@/components/modal";
+import SearchableSelect from "@/components/searchable-select";
 import { deleteSnag } from "@/lib/actions/pm-snags";
 import {
   SNAG_PRIORITIES,
@@ -140,18 +141,13 @@ export default function SnagsExplorer({
               </option>
             ))}
           </select>
-          <select
+          <SearchableSelect
             value={tradeFilter}
-            onChange={(e) => setTradeFilter(e.target.value)}
-            className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
-          >
-            <option value="">All trades</option>
-            {TRADES.map((t) => (
-              <option key={t} value={t}>
-                {TRADE_LABELS[t]}
-              </option>
-            ))}
-          </select>
+            onChange={setTradeFilter}
+            options={TRADES.map((t) => ({ value: t, label: TRADE_LABELS[t] }))}
+            placeholder="All trades"
+            className="w-48"
+          />
           <select
             value={vendorFilter}
             onChange={(e) => setVendorFilter(e.target.value)}

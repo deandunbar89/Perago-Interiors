@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, ClipboardList, Flag, CheckSquare, Building2, LogOut } from "lucide-react";
+import { LayoutGrid, ClipboardList, Flag, CheckSquare, Building2, LogOut, KeyRound } from "lucide-react";
 import { signOutAction } from "./actions";
 
 const NAV = [
@@ -53,6 +53,13 @@ export default function Sidebar({
           <p className="truncate text-sm font-medium text-white/90">{user?.name}</p>
           <p className="truncate text-xs text-white/40">{user?.email}</p>
         </div>
+        <Link
+          href="/account"
+          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-white/50 transition hover:bg-white/5 hover:text-white/90"
+        >
+          <KeyRound size={17} />
+          Change password
+        </Link>
         <form action={signOutAction}>
           <button
             type="submit"

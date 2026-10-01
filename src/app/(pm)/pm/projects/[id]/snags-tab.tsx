@@ -14,6 +14,7 @@ import {
   TRADES,
   TRADE_LABELS,
 } from "@/lib/constants";
+import SearchableSelect from "@/components/searchable-select";
 import type { PmProjectDetail } from "./types";
 
 function Photo({ documentId, alt }: { documentId: string; alt: string }) {
@@ -164,14 +165,13 @@ export default function SnagsTab({
                   </option>
                 ))}
               </select>
-              <select name="trade" defaultValue="" className={selectClass}>
-                <option value="">No trade set</option>
-                {TRADES.map((t) => (
-                  <option key={t} value={t}>
-                    {TRADE_LABELS[t]}
-                  </option>
-                ))}
-              </select>
+              <SearchableSelect
+                name="trade"
+                defaultValue=""
+                options={TRADES.map((t) => ({ value: t, label: TRADE_LABELS[t] }))}
+                placeholder="No trade set"
+                className="w-full"
+              />
               <select name="vendorId" defaultValue="" className={selectClass}>
                 <option value="">No contractor assigned</option>
                 {contractors.map((c) => (

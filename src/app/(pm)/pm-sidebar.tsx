@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CheckSquare, ChevronDown, ChevronRight, Flag, LayoutGrid, LogOut, Plus } from "lucide-react";
+import { CheckSquare, ChevronDown, ChevronRight, Flag, LayoutGrid, LogOut, Plus, KeyRound } from "lucide-react";
 import { signOutAction } from "../(app)/actions";
 
 const EXPANDED_KEY = "tendercrm.pm.sidebar.projectsExpanded";
@@ -140,6 +140,13 @@ export default function PmSidebar({
           <p className="truncate text-sm font-medium text-white/90">{user?.name}</p>
           <p className="truncate text-xs text-white/40">{user?.email}</p>
         </div>
+        <Link
+          href="/account"
+          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-white/50 transition hover:bg-white/5 hover:text-white/90"
+        >
+          <KeyRound size={17} />
+          Change password
+        </Link>
         <form action={signOutAction}>
           <button
             type="submit"

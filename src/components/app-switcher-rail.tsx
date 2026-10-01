@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, BarChart3, Bot, Building2, CheckSquare, DollarSign, Handshake, HardHat, Home, Settings, Users } from "lucide-react";
+import { AlertTriangle, BarChart3, Bot, Building2, CheckSquare, DollarSign, Handshake, HardHat, Home, Settings, User, Users } from "lucide-react";
 import type { AppSection } from "@/lib/constants";
 import type { Access } from "@/lib/section-access";
 import NotificationSetup from "./notification-setup";
@@ -21,7 +21,19 @@ export default function AppSwitcherRail({
   active,
   access,
 }: {
-  active: "home" | "crm" | "pm" | "tasks" | "snags" | "vendors" | "ai" | "reports" | "finance" | "team" | "settings";
+  active:
+    | "home"
+    | "crm"
+    | "pm"
+    | "tasks"
+    | "snags"
+    | "vendors"
+    | "ai"
+    | "reports"
+    | "finance"
+    | "team"
+    | "settings"
+    | "account";
   access: Access;
 }) {
   const visibleTools = TOOLS.filter((t) => t.section === null || access.sections.includes(t.section));
@@ -80,7 +92,17 @@ export default function AppSwitcherRail({
         </>
       )}
 
-      <div className="mt-auto">
+      <div className="mt-auto flex flex-col items-center gap-1">
+        <Link
+          href="/account"
+          title="Account"
+          className={`flex w-12 flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition ${
+            active === "account" ? "bg-gold/15 text-gold" : "text-white/50 hover:bg-white/5 hover:text-white/80"
+          }`}
+        >
+          <User size={18} />
+          Account
+        </Link>
         <NotificationSetup />
       </div>
     </aside>

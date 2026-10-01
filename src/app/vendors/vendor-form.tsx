@@ -5,6 +5,7 @@ import { Download } from "lucide-react";
 import type { Vendor, VendorDocument } from "@prisma/client";
 import { createVendor, updateVendor } from "@/lib/actions/vendors";
 import { TRADES, TRADE_LABELS, VENDOR_TYPES, VENDOR_TYPE_LABELS } from "@/lib/constants";
+import SearchableSelect from "@/components/searchable-select";
 
 const fieldClass =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold";
@@ -86,14 +87,13 @@ export default function VendorForm({
         </select>
       </div>
 
-      <select name="trade" defaultValue={vendor?.trade ?? ""} className={fieldClass}>
-        <option value="">No trade set</option>
-        {TRADES.map((t) => (
-          <option key={t} value={t}>
-            {TRADE_LABELS[t]}
-          </option>
-        ))}
-      </select>
+      <SearchableSelect
+        name="trade"
+        defaultValue={vendor?.trade ?? ""}
+        options={TRADES.map((t) => ({ value: t, label: TRADE_LABELS[t] }))}
+        placeholder="No trade set"
+        className="w-full"
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <input

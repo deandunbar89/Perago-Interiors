@@ -11,6 +11,7 @@ import {
   TRADES,
   TRADE_LABELS,
 } from "@/lib/constants";
+import SearchableSelect from "@/components/searchable-select";
 
 const fieldClass =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold";
@@ -81,14 +82,13 @@ export default function AddSnagForm({
             </option>
           ))}
         </select>
-        <select name="trade" defaultValue="" className={fieldClass}>
-          <option value="">No trade set</option>
-          {TRADES.map((t) => (
-            <option key={t} value={t}>
-              {TRADE_LABELS[t]}
-            </option>
-          ))}
-        </select>
+        <SearchableSelect
+          name="trade"
+          defaultValue=""
+          options={TRADES.map((t) => ({ value: t, label: TRADE_LABELS[t] }))}
+          placeholder="No trade set"
+          className="w-full"
+        />
         <select name="vendorId" defaultValue="" className={fieldClass}>
           <option value="">No contractor assigned</option>
           {vendors.map((v) => (

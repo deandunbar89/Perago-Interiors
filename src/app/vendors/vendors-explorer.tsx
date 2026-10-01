@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Search } from "lucide-react";
 import ViewSwitcher, { type ExplorerView } from "@/components/view-switcher";
 import Modal from "@/components/modal";
+import SearchableSelect from "@/components/searchable-select";
 import { deleteVendor } from "@/lib/actions/vendors";
 import { TRADES, TRADE_LABELS, VENDOR_TYPES, VENDOR_TYPE_LABELS } from "@/lib/constants";
 import VendorForm, { type VendorWithDocs } from "./vendor-form";
@@ -92,18 +93,13 @@ export default function VendorsExplorer({ vendors }: { vendors: VendorWithDocs[]
               </option>
             ))}
           </select>
-          <select
+          <SearchableSelect
             value={tradeFilter}
-            onChange={(e) => setTradeFilter(e.target.value)}
-            className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
-          >
-            <option value="">All trades</option>
-            {TRADES.map((t) => (
-              <option key={t} value={t}>
-                {TRADE_LABELS[t]}
-              </option>
-            ))}
-          </select>
+            onChange={setTradeFilter}
+            options={TRADES.map((t) => ({ value: t, label: TRADE_LABELS[t] }))}
+            placeholder="All trades"
+            className="w-48"
+          />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
