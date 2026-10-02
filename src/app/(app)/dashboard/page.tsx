@@ -2,19 +2,23 @@
 import { Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatNumber } from "@/lib/constants";
+import { getTaskViewer, taskVisibility } from "@/lib/task-access";
 import { deadlineGroupMatchesRange } from "../deadlines/filter-deadlines";
 import PipelineBoard from "./pipeline-board";
 import StatCard from "./stat-card";
 
 export default async function DashboardPage() {
+  const viewer = await getTaskViewer();
+  const visible = taskVisibility(viewer);
+
   const [projects, deadlines] = await Promise.all([
     prisma.project.findMany({
       include: { client: true, owner: true },
       orderBy: { updatedAt: "desc" },
     }),
     prisma.task.findMany({
-      where: { status: "OPEN" },
-      include: { subtasks: true, project: true },
+      where: { status: "OPEN", ...visible },
+      include: { subtasks: { where: visible }, project: true },
     }),
   ]);
 

@@ -38,6 +38,9 @@ function readProjectFields(formData: FormData) {
     contactEmail: (formData.get("contactEmail") as string) || null,
     contactPhone1: (formData.get("contactPhone1") as string) || null,
     contactPhone2: (formData.get("contactPhone2") as string) || null,
+    referrerName: (formData.get("referrerName") as string)?.trim() || null,
+    referrerContact: (formData.get("referrerContact") as string)?.trim() || null,
+    referralDetails: (formData.get("referralDetails") as string)?.trim() || null,
     submissionDeadline: formData.get("submissionDeadline")
       ? new Date(formData.get("submissionDeadline") as string)
       : null,

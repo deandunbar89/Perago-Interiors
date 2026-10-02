@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getTaskViewer, taskVisibility } from "@/lib/task-access";
 import ProjectHeader from "./project-header";
 import ProjectTabs from "./tabs";
 
@@ -9,6 +10,7 @@ export default async function ProjectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const viewer = await getTaskViewer();
 
   const project = await prisma.project.findUnique({
     where: { id },
@@ -19,7 +21,7 @@ export default async function ProjectPage({
       notes: { orderBy: { createdAt: "desc" }, include: { author: true } },
       emailLogs: { orderBy: { sentAt: "desc" }, include: { loggedBy: true } },
       activities: { orderBy: { createdAt: "desc" }, include: { user: true }, take: 20 },
-      subtasks: { orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }] },
+      subtasks: { where: taskVisibility(viewer), orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }] },
       pmProject: true,
     },
   });

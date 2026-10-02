@@ -17,22 +17,22 @@ export async function sendDailyTaskReminders() {
 
   const [tasks, subtasks] = await Promise.all([
     prisma.task.findMany({
-      where: { status: "OPEN", dueDate: { gte: today, lt: dayAfter }, createdById: { not: null } },
-      select: { dueDate: true, createdById: true },
+      where: { status: "OPEN", dueDate: { gte: today, lt: dayAfter }, assigneeId: { not: null } },
+      select: { dueDate: true, assigneeId: true },
     }),
     prisma.subtask.findMany({
-      where: { status: "OPEN", dueDate: { gte: today, lt: dayAfter }, createdById: { not: null } },
-      select: { dueDate: true, createdById: true },
+      where: { status: "OPEN", dueDate: { gte: today, lt: dayAfter }, assigneeId: { not: null } },
+      select: { dueDate: true, assigneeId: true },
     }),
   ]);
 
   const counts = new Map<string, { today: number; tomorrow: number }>();
   for (const item of [...tasks, ...subtasks]) {
-    if (!item.createdById || !item.dueDate) continue;
+    if (!item.assigneeId || !item.dueDate) continue;
     const bucket = item.dueDate < tomorrow ? "today" : "tomorrow";
-    const entry = counts.get(item.createdById) ?? { today: 0, tomorrow: 0 };
+    const entry = counts.get(item.assigneeId) ?? { today: 0, tomorrow: 0 };
     entry[bucket]++;
-    counts.set(item.createdById, entry);
+    counts.set(item.assigneeId, entry);
   }
 
   await Promise.all(

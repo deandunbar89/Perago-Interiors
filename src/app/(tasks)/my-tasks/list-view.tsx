@@ -57,6 +57,12 @@ export default function ListView({
             {task.title}
           </Link>
         );
+      case "assignee":
+        return task.assignee ? (
+          <span className="text-slate-700">{task.assignee.name}</span>
+        ) : (
+          <span className="text-slate-300">Unassigned</span>
+        );
       case "source":
         return (
           <span

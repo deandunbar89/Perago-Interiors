@@ -5,4 +5,6 @@ export type TaskDetail = Subtask & {
   project: Project | null;
   pmProject: PmProject | null;
   notes: (Note & { author: User | null })[];
+  assignee: User | null;
+  watchers: User[];
 };

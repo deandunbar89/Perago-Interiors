@@ -1,9 +1,10 @@
 import type { UnifiedTaskRow } from "./types";
 
-export type ColumnId = "title" | "source" | "deadline" | "project" | "status" | "dueDate";
+export type ColumnId = "title" | "assignee" | "source" | "deadline" | "project" | "status" | "dueDate";
 
 export const COLUMN_LABELS: Record<ColumnId, string> = {
   title: "Task",
+  assignee: "Assigned to",
   source: "From",
   deadline: "Deadline",
   project: "Project",
@@ -11,9 +12,9 @@ export const COLUMN_LABELS: Record<ColumnId, string> = {
   dueDate: "Close Date",
 };
 
-export const DEFAULT_COLUMNS: ColumnId[] = ["title", "source", "project", "dueDate"];
+export const DEFAULT_COLUMNS: ColumnId[] = ["title", "assignee", "source", "project", "dueDate"];
 
-export const ALL_COLUMNS: ColumnId[] = ["title", "source", "deadline", "project", "status", "dueDate"];
+export const ALL_COLUMNS: ColumnId[] = ["title", "assignee", "source", "deadline", "project", "status", "dueDate"];
 
 export type SortDirection = "asc" | "desc";
 export type SortState = { column: ColumnId; direction: SortDirection };
@@ -22,6 +23,7 @@ export type SortState = { column: ColumnId; direction: SortDirection };
  * A-to-Z for everything else. */
 export const DEFAULT_SORT_DIRECTION: Record<ColumnId, SortDirection> = {
   title: "asc",
+  assignee: "asc",
   source: "asc",
   deadline: "asc",
   project: "asc",
@@ -34,6 +36,8 @@ function sortValue(col: ColumnId, task: UnifiedTaskRow): string | number | null 
   switch (col) {
     case "title":
       return task.title.toLowerCase();
+    case "assignee":
+      return task.assignee?.name?.toLowerCase() ?? null;
     case "source":
       return task.scope;
     case "deadline":

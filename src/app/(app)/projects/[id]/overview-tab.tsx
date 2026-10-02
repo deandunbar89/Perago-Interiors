@@ -141,6 +141,24 @@ export default function OverviewTab({ project }: { project: ProjectDetail }) {
           </div>
         )}
 
+        {(project.referrerName || project.referrerContact || project.referralDetails) && (
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">Referral</h3>
+            {project.referrerName && (
+              <p className="flex items-center gap-1.5 text-sm font-medium text-slate-800">
+                <UserIcon size={13} className="text-slate-400" />
+                {project.referrerName}
+              </p>
+            )}
+            {project.referrerContact && (
+              <p className="ml-5 text-xs text-slate-500">{project.referrerContact}</p>
+            )}
+            {project.referralDetails && (
+              <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{project.referralDetails}</p>
+            )}
+          </div>
+        )}
+
         {project.client && (
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <h3 className="mb-3 text-sm font-semibold text-slate-900">Client contacts</h3>

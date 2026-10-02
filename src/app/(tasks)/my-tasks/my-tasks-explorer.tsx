@@ -6,7 +6,7 @@ import { updateTaskStatus, updateTaskDueDate, deleteTask } from "@/lib/actions/m
 import ColumnPicker from "@/components/column-picker";
 import ViewSwitcher, { type ExplorerView } from "@/components/view-switcher";
 import { ALL_COLUMNS, COLUMN_LABELS, DEFAULT_COLUMNS, sortTasks, type ColumnId, type SortState } from "./columns";
-import type { UnifiedTaskRow } from "./types";
+import type { TeamMember, UnifiedTaskRow } from "./types";
 import ListView from "./list-view";
 import GridView from "./grid-view";
 import GanttView from "./gantt-view";
@@ -17,22 +17,30 @@ type StatusMap = Record<string, "OPEN" | "DONE">;
 type Item = { id: string; title: string };
 
 const VIEW_KEY = "tendercrm.mytasks.view";
-const COLUMNS_KEY = "tendercrm.mytasks.columns";
+const COLUMNS_KEY = "tendercrm.mytasks.columns.v2";
 const SORT_KEY = "tendercrm.mytasks.sort";
 
 export default function MyTasksExplorer({
   tasks,
   tenders,
   projects,
+  users,
+  isAdmin,
+  currentUserId,
   initialRange,
 }: {
   tasks: UnifiedTaskRow[];
   tenders: Item[];
   projects: Item[];
+  users: TeamMember[];
+  isAdmin: boolean;
+  currentUserId: string;
   initialRange: Range;
 }) {
   const [range, setRange] = useState<Range>(initialRange);
   const [showDone, setShowDone] = useState(false);
+  // Admin-only: "ALL" (everyone), "ME", "UNASSIGNED", or a specific person's user id.
+  const [assigneeFilter, setAssigneeFilter] = useState("ALL");
   const [view, setView] = useState<ExplorerView>("list");
   const [columns, setColumns] = useState<ColumnId[]>(DEFAULT_COLUMNS);
   const [sort, setSort] = useState<SortState | null>(null);
@@ -80,8 +88,16 @@ export default function MyTasksExplorer({
   // Derived fresh from props each render so newly created/deleted tasks show up
   // without a full page reload; overrides only cover the optimistic in-flight window.
   const items = useMemo(
-    () => tasks.map((t) => (statusOverrides[t.id] ? { ...t, status: statusOverrides[t.id] } : t)),
-    [tasks, statusOverrides]
+    () =>
+      tasks
+        .filter((t) => {
+          if (!isAdmin || assigneeFilter === "ALL") return true;
+          if (assigneeFilter === "ME") return t.assigneeId === currentUserId;
+          if (assigneeFilter === "UNASSIGNED") return !t.assigneeId;
+          return t.assigneeId === assigneeFilter;
+        })
+        .map((t) => (statusOverrides[t.id] ? { ...t, status: statusOverrides[t.id] } : t)),
+    [tasks, statusOverrides, isAdmin, assigneeFilter, currentUserId]
   );
 
   const openTasks = useMemo(() => items.filter((t) => t.status === "OPEN"), [items]);
@@ -177,9 +193,31 @@ export default function MyTasksExplorer({
             />
           )}
           <ViewSwitcher view={view} onChange={setView} views={["list", "grid", "gantt", "kanban"]} />
-          <QuickAddTask tenders={tenders} projects={projects} />
+          <QuickAddTask tenders={tenders} projects={projects} users={users} currentUserId={currentUserId} />
         </div>
       </div>
+
+      {isAdmin && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+          <span>Showing</span>
+          <select
+            value={assigneeFilter}
+            onChange={(e) => setAssigneeFilter(e.target.value)}
+            className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm text-slate-700 outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+          >
+            <option value="ALL">Everyone&apos;s tasks</option>
+            <option value="ME">Only mine</option>
+            {users
+              .filter((u) => u.id !== currentUserId)
+              .map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+            <option value="UNASSIGNED">Unassigned</option>
+          </select>
+        </div>
+      )}
 
       <label className="mb-3 flex w-fit items-center gap-2 text-sm text-slate-500">
         <input

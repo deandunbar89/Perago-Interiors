@@ -161,6 +161,39 @@ export default function ProjectForm({
         </div>
       </div>
 
+      <div className="rounded-lg border border-slate-200 p-4">
+        <p className="mb-3 text-sm font-semibold text-slate-800">Referral</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600">Referred by</label>
+            <input
+              name="referrerName"
+              defaultValue={project?.referrerName || ""}
+              placeholder="Person or company who referred this"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600">Their contact (phone / email)</label>
+            <input
+              name="referrerContact"
+              defaultValue={project?.referrerContact || ""}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-medium text-slate-600">Referral details</label>
+            <textarea
+              name="referralDetails"
+              rows={2}
+              defaultValue={project?.referralDetails || ""}
+              placeholder="How they know the client, any commission or fee agreed…"
+              className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-3 gap-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">Submission deadline</label>

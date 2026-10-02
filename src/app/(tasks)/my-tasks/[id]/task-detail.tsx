@@ -4,11 +4,14 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowLeft, Calendar, CheckCircle2, Circle, Flag, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle2, Circle, Flag, Pencil, Trash2, X } from "lucide-react";
 import {
   createTaskNote,
   deleteTask,
   deleteTaskNote,
+  tagTaskPerson,
+  untagTaskPerson,
+  updateTaskAssignee,
   updateTaskDueDate,
   updateTaskNote,
   updateTaskStatus,
@@ -21,12 +24,46 @@ function toDateInputValue(date: Date | null) {
   return new Date(date).toISOString().slice(0, 10);
 }
 
-export default function TaskDetail({ task }: { task: TaskDetailRow }) {
+export default function TaskDetail({
+  task,
+  users,
+}: {
+  task: TaskDetailRow;
+  users: { id: string; name: string }[];
+}) {
   const router = useRouter();
   const [status, setStatus] = useState(task.status);
   const [title, setTitle] = useState(task.title);
   const [dueDate, setDueDate] = useState(toDateInputValue(task.dueDate));
   const [pending, startTransition] = useTransition();
+  const [assignError, setAssignError] = useState<string | null>(null);
+
+  const taggableUsers = users.filter(
+    (u) => u.id !== task.assigneeId && !task.watchers.some((w) => w.id === u.id)
+  );
+
+  function handleAssigneeChange(value: string) {
+    if (!value) return;
+    setAssignError(null);
+    startTransition(async () => {
+      const result = await updateTaskAssignee(task.id, value);
+      if (result?.error) setAssignError(result.error);
+    });
+  }
+
+  function handleTag(value: string) {
+    if (!value) return;
+    startTransition(async () => {
+      const result = await tagTaskPerson(task.id, value);
+      if (result?.error) setAssignError(result.error);
+    });
+  }
+
+  function handleUntag(userId: string) {
+    startTransition(() => {
+      untagTaskPerson(task.id, userId);
+    });
+  }
 
   const [noteError, setNoteError] = useState<string | null>(null);
   const noteFormRef = useRef<HTMLFormElement>(null);
@@ -181,6 +218,64 @@ export default function TaskDetail({ task }: { task: TaskDetailRow }) {
             <Trash2 size={16} />
           </button>
         </div>
+
+        <div className="mt-4 ml-9 space-y-3 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-24 text-slate-500">Assigned to</span>
+            <select
+              value={task.assigneeId ?? ""}
+              onChange={(e) => handleAssigneeChange(e.target.value)}
+              disabled={pending}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+            >
+              {!task.assigneeId && (
+                <option value="" disabled>
+                  Unassigned
+                </option>
+              )}
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-24 text-slate-500">Tagged</span>
+            {task.watchers.map((w) => (
+              <span
+                key={w.id}
+                className="flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700"
+              >
+                @{w.name}
+                <button
+                  onClick={() => handleUntag(w.id)}
+                  title="Remove"
+                  className="text-slate-400 transition hover:text-red-600"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+            {taggableUsers.length > 0 && (
+              <select
+                value=""
+                onChange={(e) => handleTag(e.target.value)}
+                disabled={pending}
+                className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs text-slate-500 outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+              >
+                <option value="">+ Tag someone…</option>
+                {taggableUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+          {assignError && <p className="text-sm text-red-600">{assignError}</p>}
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -195,7 +290,7 @@ export default function TaskDetail({ task }: { task: TaskDetailRow }) {
             name="body"
             rows={3}
             required
-            placeholder="Add a note about this task…"
+            placeholder="Add a note about this task… (type @name to tag someone and notify them)"
             className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
           />
           {noteError && <p className="mt-2 text-sm text-red-600">{noteError}</p>}

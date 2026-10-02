@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { RANGES, type Range } from "@/lib/date-ranges";
+import { getTaskViewer, taskVisibility } from "@/lib/task-access";
 import TasksExplorer from "./tasks-explorer";
 
 export default async function TasksPage({
@@ -9,15 +10,18 @@ export default async function TasksPage({
 }) {
   const { range } = await searchParams;
   const initialRange: Range = RANGES.includes(range as Range) ? (range as Range) : "7days";
+  const viewer = await getTaskViewer();
+  const visible = taskVisibility(viewer);
 
-  const [tasks, projects, deadlines] = await Promise.all([
+  const [tasks, projects, deadlines, users] = await Promise.all([
     prisma.subtask.findMany({
-      where: { scope: "CRM" },
+      where: { scope: "CRM", ...visible },
       include: { task: true, project: true },
       orderBy: { dueDate: "asc" },
     }),
     prisma.project.findMany({ orderBy: { title: "asc" } }),
-    prisma.task.findMany({ where: { scope: "CRM" }, orderBy: { title: "asc" } }),
+    prisma.task.findMany({ where: { scope: "CRM", ...visible }, orderBy: { title: "asc" } }),
+    prisma.user.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
   ]);
 
   return (
@@ -28,7 +32,14 @@ export default async function TasksPage({
           Everything actionable — from deadlines and projects, or on its own — in one working list
         </p>
       </div>
-      <TasksExplorer tasks={tasks} projects={projects} deadlines={deadlines} initialRange={initialRange} />
+      <TasksExplorer
+        tasks={tasks}
+        projects={projects}
+        deadlines={deadlines}
+        users={users}
+        currentUserId={viewer.userId}
+        initialRange={initialRange}
+      />
     </div>
   );
 }

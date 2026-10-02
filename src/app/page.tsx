@@ -7,6 +7,7 @@ import { formatNumber, APP_SECTION_LABELS, type AppSection } from "@/lib/constan
 import { matchesRange } from "@/lib/date-ranges";
 import AppSwitcherRail from "@/components/app-switcher-rail";
 import { getAccess } from "@/lib/section-access";
+import { getTaskViewer, taskVisibility } from "@/lib/task-access";
 import StatCard from "@/app/(app)/dashboard/stat-card";
 
 // The activity numbers are live counts, not static content — force this page to be
@@ -66,24 +67,33 @@ export default async function HomePage({
   const canCRM = access.sections.includes("CRM");
   const canPM = access.sections.includes("PM");
   const canTasks = access.sections.includes("TASKS");
+  const visible = taskVisibility(await getTaskViewer());
 
   const [projects, pmProjects, crmDeadlines, pmDeadlines, openTasks] = await Promise.all([
     canCRM ? prisma.project.findMany({ select: { stage: true, value: true } }) : Promise.resolve([]),
     canPM ? prisma.pmProject.findMany({ select: { status: true, value: true } }) : Promise.resolve([]),
     canCRM
       ? prisma.task.findMany({
-          where: { scope: "CRM", status: "OPEN" },
-          select: { dueDate: true, status: true, subtasks: { select: { dueDate: true, status: true } } },
+          where: { scope: "CRM", status: "OPEN", ...visible },
+          select: {
+            dueDate: true,
+            status: true,
+            subtasks: { where: visible, select: { dueDate: true, status: true } },
+          },
         })
       : Promise.resolve([]),
     canPM
       ? prisma.task.findMany({
-          where: { scope: "PM", status: "OPEN" },
-          select: { dueDate: true, status: true, subtasks: { select: { dueDate: true, status: true } } },
+          where: { scope: "PM", status: "OPEN", ...visible },
+          select: {
+            dueDate: true,
+            status: true,
+            subtasks: { where: visible, select: { dueDate: true, status: true } },
+          },
         })
       : Promise.resolve([]),
     canTasks
-      ? prisma.subtask.findMany({ where: { status: "OPEN" }, select: { scope: true, dueDate: true } })
+      ? prisma.subtask.findMany({ where: { status: "OPEN", ...visible }, select: { scope: true, dueDate: true } })
       : Promise.resolve([]),
   ]);
 

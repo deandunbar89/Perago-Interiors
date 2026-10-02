@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getTaskViewer, taskVisibility } from "@/lib/task-access";
 import DeadlinesExplorer from "./deadlines-explorer";
 import { RANGES, type Range } from "./types";
 
@@ -10,12 +11,15 @@ export default async function DeadlinesPage({
   const { range } = await searchParams;
   const initialRange: Range = RANGES.includes(range as Range) ? (range as Range) : "7days";
 
+  const viewer = await getTaskViewer();
+  const visible = taskVisibility(viewer);
+
   const [deadlines, projects] = await Promise.all([
     prisma.task.findMany({
-      where: { scope: "PM" },
+      where: { scope: "PM", ...visible },
       include: {
         pmProject: true,
-        subtasks: { orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }] },
+        subtasks: { where: visible, orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }] },
         _count: { select: { taskNotes: true } },
       },
       orderBy: { dueDate: "asc" },

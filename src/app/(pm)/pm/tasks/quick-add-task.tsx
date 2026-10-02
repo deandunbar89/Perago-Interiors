@@ -8,9 +8,13 @@ import { createTask } from "@/lib/actions/pm-tasks";
 export default function QuickAddTask({
   projects,
   deadlines,
+  users,
+  currentUserId,
 }: {
   projects: PmProject[];
   deadlines: Task[];
+  users: { id: string; name: string }[];
+  currentUserId: string;
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +58,18 @@ export default function QuickAddTask({
         placeholder="What needs to be done?"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
       />
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <select
+          name="assigneeId"
+          defaultValue={currentUserId}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+        >
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.id === currentUserId ? `Assign to: me (${u.name})` : `Assign to: ${u.name}`}
+            </option>
+          ))}
+        </select>
         <input
           type="date"
           name="dueDate"

@@ -28,6 +28,22 @@ export async function notifyAll(section: AppSection, payload: NotifyPayload, act
   });
 }
 
+/** Tells one person a task was assigned to them (skips self-assignment and anyone who has
+ * muted the Tasks category). */
+export async function notifyAssigned(assigneeId: string | null | undefined, payload: NotifyPayload, actorUserId?: string) {
+  if (!assigneeId || assigneeId === actorUserId) return;
+
+  const user = await prisma.user.findUnique({
+    where: { id: assigneeId },
+    select: { id: true, mutedNotificationTypes: true },
+  });
+  if (!user || user.mutedNotificationTypes.includes("TASKS")) return;
+
+  await prisma.notification.create({
+    data: { recipientId: user.id, type: "TASKS", title: payload.title, body: payload.body, link: payload.link },
+  });
+}
+
 /** Notifies specific users directly (used for @mentions), regardless of section access —
  * a mention is a direct address, not a broadcast about a section's activity. */
 export async function notifyMentioned(userIds: string[], payload: NotifyPayload, actorUserId?: string) {

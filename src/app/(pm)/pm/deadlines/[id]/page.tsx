@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { canAccessTask, getTaskViewer, taskVisibility } from "@/lib/task-access";
 import DeadlineHeader from "./deadline-header";
 import TasksPanel from "./tasks-panel";
 import DeadlineNotes from "./deadline-notes";
@@ -10,17 +11,19 @@ export default async function DeadlineDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const viewer = await getTaskViewer();
 
   const deadline = await prisma.task.findUnique({
     where: { id },
     include: {
       pmProject: true,
+      watchers: true,
       taskNotes: { orderBy: { createdAt: "desc" }, include: { author: true } },
-      subtasks: { orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }] },
+      subtasks: { where: taskVisibility(viewer), orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }] },
     },
   });
 
-  if (!deadline) notFound();
+  if (!deadline || !canAccessTask(viewer, deadline)) notFound();
 
   return (
     <div className="mx-auto max-w-2xl p-8">

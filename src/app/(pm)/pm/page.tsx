@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatNumber } from "@/lib/constants";
+import { getTaskViewer, taskVisibility } from "@/lib/task-access";
 import StatCard from "@/app/(app)/dashboard/stat-card";
 import { deadlineGroupMatchesRange } from "./deadlines/filter-deadlines";
 import PmProjectCard from "./pm-project-card";
@@ -9,6 +10,9 @@ import PmProjectCard from "./pm-project-card";
 const RECENT_COUNT = 6;
 
 export default async function PmDashboardPage() {
+  const viewer = await getTaskViewer();
+  const visible = taskVisibility(viewer);
+
   const [pmProjects, totalCount, activeCount, activeValue, deadlines] = await Promise.all([
     prisma.pmProject.findMany({
       include: {
@@ -23,8 +27,8 @@ export default async function PmDashboardPage() {
     prisma.pmProject.count({ where: { status: "ACTIVE" } }),
     prisma.pmProject.aggregate({ where: { status: "ACTIVE" }, _sum: { value: true } }),
     prisma.task.findMany({
-      where: { scope: "PM", status: "OPEN" },
-      include: { subtasks: true, pmProject: true },
+      where: { scope: "PM", status: "OPEN", ...visible },
+      include: { subtasks: { where: visible }, pmProject: true },
     }),
   ]);
 

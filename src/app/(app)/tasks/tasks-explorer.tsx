@@ -24,11 +24,15 @@ export default function TasksExplorer({
   tasks,
   projects,
   deadlines,
+  users,
+  currentUserId,
   initialRange,
 }: {
   tasks: TaskRow[];
   projects: Project[];
   deadlines: Task[];
+  users: { id: string; name: string }[];
+  currentUserId: string;
   initialRange: Range;
 }) {
   const [range, setRange] = useState<Range>(initialRange);
@@ -177,7 +181,7 @@ export default function TasksExplorer({
             />
           )}
           <ViewSwitcher view={view} onChange={setView} views={["list", "grid", "gantt", "kanban"]} />
-          <QuickAddTask projects={projects} deadlines={deadlines} />
+          <QuickAddTask projects={projects} deadlines={deadlines} users={users} currentUserId={currentUserId} />
         </div>
       </div>
 

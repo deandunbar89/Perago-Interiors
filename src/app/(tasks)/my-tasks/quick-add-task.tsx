@@ -6,7 +6,17 @@ import { createTask } from "@/lib/actions/my-tasks";
 
 type Item = { id: string; title: string };
 
-export default function QuickAddTask({ tenders, projects }: { tenders: Item[]; projects: Item[] }) {
+export default function QuickAddTask({
+  tenders,
+  projects,
+  users,
+  currentUserId,
+}: {
+  tenders: Item[];
+  projects: Item[];
+  users: { id: string; name: string }[];
+  currentUserId: string;
+}) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -46,10 +56,21 @@ export default function QuickAddTask({ tenders, projects }: { tenders: Item[]; p
         name="title"
         required
         autoFocus
-        placeholder="What needs to be done?"
+        placeholder="What needs to be done? (type @name to tag someone)"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
       />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <select
+          name="assigneeId"
+          defaultValue={currentUserId}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+        >
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.id === currentUserId ? `Assign to: me (${u.name})` : `Assign to: ${u.name}`}
+            </option>
+          ))}
+        </select>
         <input
           type="date"
           name="dueDate"
