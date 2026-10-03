@@ -47,9 +47,25 @@ export async function createPmProject(_prevState: unknown, formData: FormData) {
   const targetEndDate = formData.get("targetEndDate")
     ? new Date(formData.get("targetEndDate") as string)
     : null;
+  const referrerName = (formData.get("referrerName") as string)?.trim() || null;
+  const referrerContact = (formData.get("referrerContact") as string)?.trim() || null;
+  const referralDetails = (formData.get("referralDetails") as string)?.trim() || null;
 
   const pmProject = await prisma.pmProject.create({
-    data: { title, clientId, value, currency, location, description, startDate, targetEndDate, ownerId: userId },
+    data: {
+      title,
+      clientId,
+      value,
+      currency,
+      location,
+      description,
+      startDate,
+      targetEndDate,
+      referrerName,
+      referrerContact,
+      referralDetails,
+      ownerId: userId,
+    },
   });
 
   await prisma.pmDocSubsection.createMany({
@@ -85,6 +101,9 @@ export async function promoteToPm(tenderProjectId: string) {
       currency: tender.currency,
       location: tender.location,
       description: tender.description,
+      referrerName: tender.referrerName,
+      referrerContact: tender.referrerContact,
+      referralDetails: tender.referralDetails,
       startDate: tender.awardDate,
       linkedTenderId: tender.id,
       ownerId: userId,
@@ -122,10 +141,25 @@ export async function updatePmProject(pmProjectId: string, _prevState: unknown, 
   const targetEndDate = formData.get("targetEndDate")
     ? new Date(formData.get("targetEndDate") as string)
     : null;
+  const referrerName = (formData.get("referrerName") as string)?.trim() || null;
+  const referrerContact = (formData.get("referrerContact") as string)?.trim() || null;
+  const referralDetails = (formData.get("referralDetails") as string)?.trim() || null;
 
   await prisma.pmProject.update({
     where: { id: pmProjectId },
-    data: { title, clientId, value, currency, location, description, startDate, targetEndDate },
+    data: {
+      title,
+      clientId,
+      value,
+      currency,
+      location,
+      description,
+      startDate,
+      targetEndDate,
+      referrerName,
+      referrerContact,
+      referralDetails,
+    },
   });
 
   await syncPmProjectDates(pmProjectId);

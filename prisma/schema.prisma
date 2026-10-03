@@ -484,6 +484,10 @@ model PmProject {
   location String?
   description String?
 
+  referrerName    String?
+  referrerContact String?
+  referralDetails String?
+
   startDate      DateTime?
   targetEndDate  DateTime?
 
