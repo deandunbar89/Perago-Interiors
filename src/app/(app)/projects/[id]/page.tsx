@@ -17,7 +17,11 @@ export default async function ProjectPage({
     include: {
       client: { include: { contacts: true } },
       owner: true,
-      documents: { orderBy: { createdAt: "desc" }, include: { uploadedBy: true } },
+      documents: { where: { commercialSectionId: null }, orderBy: { createdAt: "desc" }, include: { uploadedBy: true } },
+      commercialSections: {
+        orderBy: { sortOrder: "asc" },
+        include: { documents: { orderBy: { createdAt: "desc" }, include: { uploadedBy: true } } },
+      },
       notes: { orderBy: { createdAt: "desc" }, include: { author: true } },
       emailLogs: { orderBy: { sentAt: "desc" }, include: { loggedBy: true } },
       activities: { orderBy: { createdAt: "desc" }, include: { user: true }, take: 20 },

@@ -102,6 +102,26 @@ export async function createCrmProjectDriveTemplate(projectTitle: string, catego
   }
 }
 
+/** Creates Perago Interiors/CRM Projects/<project>/Commercial/<section> for each commercial section. */
+export async function createCrmCommercialDriveTemplate(projectTitle: string, sectionNames: string[]) {
+  try {
+    const drive = getDriveClient();
+    if (!drive) return;
+
+    const commercialFolderId = await resolveFolderPath(drive, [
+      "Perago Interiors",
+      "CRM Projects",
+      projectTitle,
+      "Commercial",
+    ]);
+    for (const name of sectionNames) {
+      await findOrCreateFolder(drive, name, commercialFolderId);
+    }
+  } catch (err) {
+    console.error("Drive CRM commercial template failed:", err);
+  }
+}
+
 /**
  * Copies a file into Drive under Perago Interiors/<pathSegments...>, creating any
  * missing folders along the way. Never throws — a Drive outage should never break

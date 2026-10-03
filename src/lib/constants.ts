@@ -119,6 +119,17 @@ export const PM_DOC_CATEGORY_LABELS: Record<PmDocCategory, string> = {
 export const UPLOAD_MODES = ["SINGLE", "MULTIPLE"] as const;
 export type UploadMode = (typeof UPLOAD_MODES)[number];
 
+/** Upload sections every CRM project gets on its Commercial tab (more can be added per project). */
+export const DEFAULT_CRM_COMMERCIAL_SECTIONS: { name: string; mode: UploadMode }[] = [
+  { name: "Quotation", mode: "MULTIPLE" },
+  { name: "BOQ", mode: "MULTIPLE" },
+  { name: "Cost Comparison", mode: "MULTIPLE" },
+  { name: "Supplier Quotations", mode: "MULTIPLE" },
+  { name: "Pricing & Estimates", mode: "MULTIPLE" },
+  { name: "Value Engineering", mode: "MULTIPLE" },
+  { name: "Revised Offers", mode: "MULTIPLE" },
+];
+
 export const DEFAULT_PM_SUBSECTIONS: {
   category: PmDocCategory;
   alsoInCategory?: PmDocCategory;

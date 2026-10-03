@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { Mail, Phone, Edit2, Trash2, Building2 } from "lucide-react";
+import StarRating from "@/components/star-rating";
 import { TRADE_LABELS, VENDOR_TYPE_LABELS } from "@/lib/constants";
 import type { VendorWithDocs } from "./vendor-form";
 
@@ -38,7 +40,9 @@ export default function GridView({
                   <Building2 size={16} />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-800">{v.name}</p>
+                  <Link href={`/vendors/${v.id}`} className="block truncate text-sm font-medium text-slate-800 hover:underline">
+                    {v.name}
+                  </Link>
                   <span
                     className={`rounded-full px-1.5 py-0.5 text-[11px] font-medium ${colors.bg} ${colors.text}`}
                   >
@@ -65,6 +69,7 @@ export default function GridView({
             {v.trade && (
               <p className="mb-1 text-xs text-slate-500">{TRADE_LABELS[v.trade as keyof typeof TRADE_LABELS]}</p>
             )}
+            {v.rating ? <div className="mb-1.5"><StarRating value={v.rating} size={13} /></div> : null}
             <div className="space-y-0.5 text-xs text-slate-500">
               {v.contactName && <p>{v.contactName}</p>}
               {v.phone && (

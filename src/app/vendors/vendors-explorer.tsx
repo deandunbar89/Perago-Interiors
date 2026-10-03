@@ -20,6 +20,7 @@ export default function VendorsExplorer({ vendors }: { vendors: VendorWithDocs[]
   const [typeFilter, setTypeFilter] = useState("");
   const [tradeFilter, setTradeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [ratingFilter, setRatingFilter] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<VendorWithDocs | undefined>(undefined);
   const [, startTransition] = useTransition();
@@ -41,6 +42,8 @@ export default function VendorsExplorer({ vendors }: { vendors: VendorWithDocs[]
       if (typeFilter && v.type !== typeFilter) return false;
       if (tradeFilter && v.trade !== tradeFilter) return false;
       if (statusFilter && v.status !== statusFilter) return false;
+      if (ratingFilter === "UNRATED" && v.rating) return false;
+      if (ratingFilter && ratingFilter !== "UNRATED" && (v.rating ?? 0) < Number(ratingFilter)) return false;
       if (!q) return true;
       return (
         v.name.toLowerCase().includes(q) ||
@@ -49,7 +52,7 @@ export default function VendorsExplorer({ vendors }: { vendors: VendorWithDocs[]
         v.phone?.toLowerCase().includes(q)
       );
     });
-  }, [vendors, search, typeFilter, tradeFilter, statusFilter]);
+  }, [vendors, search, typeFilter, tradeFilter, statusFilter, ratingFilter]);
 
   function openAdd() {
     setEditingVendor(undefined);
@@ -108,6 +111,16 @@ export default function VendorsExplorer({ vendors }: { vendors: VendorWithDocs[]
             <option value="">Active & inactive</option>
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Inactive</option>
+          </select>
+          <select
+            value={ratingFilter}
+            onChange={(e) => setRatingFilter(e.target.value)}
+            className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+          >
+            <option value="">Any rating</option>
+            <option value="4">4 stars &amp; up</option>
+            <option value="3">3 stars &amp; up</option>
+            <option value="UNRATED">Not rated yet</option>
           </select>
           <span className="text-xs text-slate-400">
             {filtered.length} of {vendors.length}

@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { Mail, Phone, Edit2, Trash2 } from "lucide-react";
+import StarRating from "@/components/star-rating";
 import { TRADE_LABELS, VENDOR_TYPE_LABELS } from "@/lib/constants";
 import type { VendorWithDocs } from "./vendor-form";
 
@@ -34,6 +36,7 @@ export default function ListView({
             <th className="px-4 py-2.5">Name</th>
             <th className="px-4 py-2.5">Type</th>
             <th className="px-4 py-2.5">Trade</th>
+            <th className="px-4 py-2.5">Rating</th>
             <th className="px-4 py-2.5">Contact</th>
             <th className="px-4 py-2.5">Status</th>
             <th className="w-16 px-4 py-2.5" />
@@ -44,7 +47,11 @@ export default function ListView({
             const colors = TYPE_COLORS[v.type];
             return (
               <tr key={v.id} className="transition hover:bg-slate-50">
-                <td className="px-4 py-2.5 font-medium text-slate-800">{v.name}</td>
+                <td className="px-4 py-2.5 font-medium text-slate-800">
+                  <Link href={`/vendors/${v.id}`} className="hover:underline">
+                    {v.name}
+                  </Link>
+                </td>
                 <td className="px-4 py-2.5">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${colors.bg} ${colors.text}`}>
                     {VENDOR_TYPE_LABELS[v.type as keyof typeof VENDOR_TYPE_LABELS]}
@@ -52,6 +59,9 @@ export default function ListView({
                 </td>
                 <td className="px-4 py-2.5 text-slate-600">
                   {v.trade ? TRADE_LABELS[v.trade as keyof typeof TRADE_LABELS] : "—"}
+                </td>
+                <td className="px-4 py-2.5">
+                  {v.rating ? <StarRating value={v.rating} size={13} /> : <span className="text-slate-300">—</span>}
                 </td>
                 <td className="px-4 py-2.5 text-slate-600">
                   <div className="flex flex-col gap-0.5">

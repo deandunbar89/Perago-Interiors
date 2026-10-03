@@ -5,8 +5,16 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { syncProjectDates } from "@/lib/tasks-sync";
-import { DOC_CATEGORIES, DOC_CATEGORY_LABELS, STAGE_LABELS, type Stage, type ProjectType, type Temperature } from "@/lib/constants";
-import { createCrmProjectDriveTemplate } from "@/lib/google-drive";
+import {
+  DEFAULT_CRM_COMMERCIAL_SECTIONS,
+  DOC_CATEGORIES,
+  DOC_CATEGORY_LABELS,
+  STAGE_LABELS,
+  type Stage,
+  type ProjectType,
+  type Temperature,
+} from "@/lib/constants";
+import { createCrmProjectDriveTemplate, createCrmCommercialDriveTemplate } from "@/lib/google-drive";
 import { notifyAll } from "@/lib/notify";
 
 async function requireUserId() {
@@ -78,6 +86,13 @@ export async function createProject(_prevState: unknown, formData: FormData) {
 
   await syncProjectDates(project.id);
   void createCrmProjectDriveTemplate(project.title, DOC_CATEGORIES.map((c) => DOC_CATEGORY_LABELS[c]));
+  await prisma.crmCommercialSection.createMany({
+    data: DEFAULT_CRM_COMMERCIAL_SECTIONS.map((s, i) => ({ ...s, projectId: project.id, sortOrder: i })),
+  });
+  void createCrmCommercialDriveTemplate(
+    project.title,
+    DEFAULT_CRM_COMMERCIAL_SECTIONS.map((s) => s.name)
+  );
   await notifyAll("CRM", { title: `New tender — ${project.title}`, link: `/projects/${project.id}` }, userId);
 
   revalidatePath("/dashboard");
@@ -195,6 +210,13 @@ export async function quickCreateProjectForClient(clientId: string, formData: Fo
 
   await syncProjectDates(project.id);
   void createCrmProjectDriveTemplate(project.title, DOC_CATEGORIES.map((c) => DOC_CATEGORY_LABELS[c]));
+  await prisma.crmCommercialSection.createMany({
+    data: DEFAULT_CRM_COMMERCIAL_SECTIONS.map((s, i) => ({ ...s, projectId: project.id, sortOrder: i })),
+  });
+  void createCrmCommercialDriveTemplate(
+    project.title,
+    DEFAULT_CRM_COMMERCIAL_SECTIONS.map((s) => s.name)
+  );
   await notifyAll("CRM", { title: `New tender — ${project.title}`, link: `/projects/${project.id}` }, userId);
 
   revalidatePath("/dashboard");

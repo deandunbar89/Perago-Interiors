@@ -2,6 +2,7 @@ import type {
   Activity,
   Client,
   Contact,
+  CrmCommercialSection,
   Document,
   EmailLog,
   Note,
@@ -15,6 +16,7 @@ export type ProjectDetail = Project & {
   client: (Client & { contacts: Contact[] }) | null;
   owner: User | null;
   documents: (Document & { uploadedBy: User | null })[];
+  commercialSections: (CrmCommercialSection & { documents: (Document & { uploadedBy: User | null })[] })[];
   notes: (Note & { author: User | null })[];
   emailLogs: (EmailLog & { loggedBy: User | null })[];
   activities: (Activity & { user: User | null })[];

@@ -250,6 +250,7 @@ model User {
   reportEntries   ProjectReportEntry[]
   financeOrders   ProjectOrder[]
   financePayments ProjectPayment[]
+  vendorHistoryEntries VendorProjectHistory[]
 }
 
 enum NotificationType {
@@ -351,6 +352,7 @@ model Project {
   tasks      Task[]
   subtasks   Subtask[]
   pmProject  PmProject?
+  commercialSections CrmCommercialSection[]
 }
 
 model Document {
@@ -358,6 +360,10 @@ model Document {
   projectId    String
   project      Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   category     DocCategory @default(OTHER)
+  /// Set for files filed under a CRM project's Commercial tab (Quotation, BOQ, …) — those are
+  /// kept out of the general Documents tab.
+  commercialSectionId String?
+  commercialSection   CrmCommercialSection? @relation(fields: [commercialSectionId], references: [id], onDelete: Cascade)
   originalName String
   storedName   String
   mimeType     String
@@ -365,6 +371,21 @@ model Document {
   uploadedById String?
   uploadedBy   User?       @relation(fields: [uploadedById], references: [id])
   createdAt    DateTime    @default(now())
+}
+
+/// A named upload section on a CRM project's Commercial tab (Quotation, BOQ, Cost Comparison…).
+model CrmCommercialSection {
+  id        String     @id @default(cuid())
+  projectId String
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String
+  mode      UploadMode @default(MULTIPLE)
+  sortOrder Int        @default(0)
+  createdAt DateTime   @default(now())
+
+  documents Document[]
+
+  @@unique([projectId, name])
 }
 
 model Note {
@@ -514,6 +535,7 @@ model PmProject {
   reportEntries ProjectReportEntry[]
   orders        ProjectOrder[]
   payments      ProjectPayment[]
+  vendorHistory VendorProjectHistory[]
 }
 
 model PmDocSubsection {
@@ -607,6 +629,8 @@ model Vendor {
   website     String?
   trnNumber   String?
   notes       String?
+  /// Overall 1–5 star rating of this vendor (set by hand on the vendor's page).
+  rating      Int?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -619,6 +643,25 @@ model Vendor {
   pmProjects  PmProjectVendor[]
   orders      ProjectOrder[]
   payments    ProjectPayment[]
+  history     VendorProjectHistory[]
+}
+
+/// A record of a project a vendor has worked on with us — logged by hand so work done before
+/// the app (or outside it) is covered, optionally linked to a live PM project.
+model VendorProjectHistory {
+  id          String     @id @default(cuid())
+  vendorId    String
+  vendor      Vendor     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  pmProjectId String?
+  pmProject   PmProject? @relation(fields: [pmProjectId], references: [id], onDelete: SetNull)
+  projectName String
+  workedOn    DateTime?
+  scope       String?
+  rating      Int?
+  notes       String?
+  createdById String?
+  createdBy   User?      @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
 }
 
 /// Registration documents for a vendor (trade license, TRN certificate) — not tied

@@ -6,6 +6,7 @@ import type { ProjectDetail } from "./types";
 import OverviewTab from "./overview-tab";
 import TasksTab from "./tasks-tab";
 import DocumentsTab from "./documents-tab";
+import CommercialTab from "./commercial-tab";
 import NotesTab from "./notes-tab";
 import EmailsTab from "./emails-tab";
 import EditTab from "./edit-tab";
@@ -14,6 +15,7 @@ const TABS = [
   { key: "overview", label: "Overview" },
   { key: "tasks", label: "Tasks" },
   { key: "documents", label: "Documents" },
+  { key: "commercial", label: "Commercial" },
   { key: "notes", label: "Notes" },
   { key: "emails", label: "Emails" },
   { key: "edit", label: "Edit" },
@@ -48,6 +50,12 @@ export default function ProjectTabs({
             {tab.key === "documents" && project.documents.length > 0 && (
               <span className="ml-1.5 text-xs text-slate-400">{project.documents.length}</span>
             )}
+            {tab.key === "commercial" &&
+              project.commercialSections.reduce((n, s) => n + s.documents.length, 0) > 0 && (
+                <span className="ml-1.5 text-xs text-slate-400">
+                  {project.commercialSections.reduce((n, s) => n + s.documents.length, 0)}
+                </span>
+              )}
             {tab.key === "notes" && project.notes.length > 0 && (
               <span className="ml-1.5 text-xs text-slate-400">{project.notes.length}</span>
             )}
@@ -64,6 +72,7 @@ export default function ProjectTabs({
       {active === "overview" && <OverviewTab project={project} />}
       {active === "tasks" && <TasksTab project={project} />}
       {active === "documents" && <DocumentsTab project={project} />}
+      {active === "commercial" && <CommercialTab project={project} />}
       {active === "notes" && <NotesTab project={project} />}
       {active === "emails" && <EmailsTab project={project} />}
       {active === "edit" && <EditTab project={project} clients={clients} />}
