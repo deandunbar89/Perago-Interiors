@@ -140,14 +140,16 @@ export default async function HomePage({
           )}
 
           <div className="mb-10 flex flex-col items-center text-center">
-            <Image
-              src="/brand/logo-icon-black.png"
-              alt="Perago Interiors"
-              width={1200}
-              height={201}
-              className="mb-6 h-auto w-44"
-              priority
-            />
+            <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-2xl bg-charcoal">
+              <Image
+                src="/brand/logo-icon-champagne.png"
+                alt="Perago Interiors"
+                width={1200}
+                height={201}
+                className="h-auto w-20"
+                priority
+              />
+            </div>
             <h1 className="sr-only">Perago</h1>
             <p className="mt-1.5 text-sm text-slate-500">Choose where you want to work</p>
           </div>
