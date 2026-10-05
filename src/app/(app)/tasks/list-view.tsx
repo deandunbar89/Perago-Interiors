@@ -57,7 +57,7 @@ export default function ListView({
             {task.task.title}
           </Link>
         ) : (
-          <span className="text-slate-300">—</span>
+          <span className="text-slate-400">—</span>
         );
       case "project":
         return task.project ? (
@@ -65,7 +65,7 @@ export default function ListView({
             {task.project.title}
           </Link>
         ) : (
-          <span className="text-slate-300">—</span>
+          <span className="text-slate-400">—</span>
         );
       case "status":
         return (
@@ -86,7 +86,7 @@ export default function ListView({
                   ? "bg-amber-50 text-amber-700"
                   : due
                     ? "bg-slate-100 text-slate-600"
-                    : "text-slate-300"
+                    : "text-slate-400"
             }`}
           >
             <Calendar size={11} />
@@ -108,7 +108,7 @@ export default function ListView({
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
       <table className="w-full min-w-[640px] text-sm">
         <thead>
-          <tr className="border-b border-slate-100 bg-slate-50/60 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <tr className="border-b border-champagne bg-charcoal text-left text-xs font-semibold uppercase tracking-wide text-cream">
             <th className="w-10 px-4 py-2.5" />
             {columns.map((col) => {
               const active = sort?.column === col;
@@ -128,7 +128,7 @@ export default function ListView({
                         <ArrowDown size={12} />
                       )
                     ) : (
-                      <ArrowUpDown size={12} className="text-slate-300" />
+                      <ArrowUpDown size={12} className="text-slate-400" />
                     )}
                   </button>
                 </th>
@@ -156,7 +156,7 @@ export default function ListView({
               <td className="px-4 py-2.5 text-right">
                 <button
                   onClick={() => onDelete(task.id)}
-                  className="text-slate-300 transition hover:text-red-600"
+                  className="text-slate-400 transition hover:text-red-600"
                 >
                   <Trash2 size={15} />
                 </button>

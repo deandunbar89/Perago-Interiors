@@ -76,7 +76,7 @@ export default function AiExplorer({ subscriptions }: { subscriptions: AiSubscri
 
         <button
           onClick={openAdd}
-          className="flex items-center gap-1.5 rounded-lg bg-charcoal px-3 py-1.5 text-sm font-medium text-white transition hover:bg-jet"
+          className="flex items-center gap-1.5 rounded-lg bg-charcoal px-3 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal"
         >
           <Plus size={15} />
           Add subscription
@@ -91,7 +91,7 @@ export default function AiExplorer({ subscriptions }: { subscriptions: AiSubscri
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="w-full min-w-[900px] text-sm">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/60 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-champagne bg-charcoal text-left text-xs font-semibold uppercase tracking-wide text-cream">
                 <th className="px-4 py-2.5">Name</th>
                 <th className="px-4 py-2.5">Plan</th>
                 <th className="px-4 py-2.5">Username</th>
@@ -113,7 +113,7 @@ export default function AiExplorer({ subscriptions }: { subscriptions: AiSubscri
                           href={s.url.startsWith("http") ? s.url : `https://${s.url}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-slate-300 hover:text-slate-600"
+                          className="text-slate-400 hover:text-slate-600"
                         >
                           <ExternalLink size={12} />
                         </a>
@@ -149,7 +149,7 @@ export default function AiExplorer({ subscriptions }: { subscriptions: AiSubscri
                       </button>
                       <button
                         onClick={() => handleDelete(s)}
-                        className="flex items-center justify-center rounded-lg p-1.5 text-slate-300 transition hover:bg-red-50 hover:text-red-600"
+                        className="flex items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                       >
                         <Trash2 size={14} />
                       </button>

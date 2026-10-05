@@ -31,7 +31,9 @@ export default function LoginForm({ callbackUrl }: { callbackUrl: string }) {
         />
       </div>
       {state?.error && (
-        <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{state.error}</p>
+        <p className="rounded-lg border border-champagne/40 bg-champagne/10 px-3 py-2 text-sm text-champagne">
+          {state.error}
+        </p>
       )}
       <button
         type="submit"

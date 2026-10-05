@@ -70,7 +70,7 @@ export default function ColumnPicker<T extends string>({
                 >
                   <GripVertical
                     size={14}
-                    className={visible.includes(col) ? "cursor-grab text-slate-300" : "text-slate-200"}
+                    className={visible.includes(col) ? "cursor-grab text-slate-400" : "text-slate-200"}
                   />
                   <label className="flex flex-1 items-center gap-2">
                     <input

@@ -1,36 +1,126 @@
 @import "tailwindcss";
 
+/*
+  Perago Interiors brand (Brand Guidelines 2026)
+  Primary:  Champagne #E3CFA3, True Black #000000
+  Neutrals: Greige #CFCAC3, Light Grey #F4F2F0, Cream #FFFCF8
+  No other colours. Every Tailwind colour the app already uses is remapped below
+  to one of these five, so nothing off-palette can reach the screen.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --perago-champagne: #e3cfa3;
+  --perago-black: #000000;
+  --perago-greige: #cfcac3;
+  --perago-light-grey: #f4f2f0;
+  --perago-cream: #fffcf8;
 
-  /* Perago Interiors brand */
-  --color-charcoal: #15130f;
-  --color-jet: #0a0908;
-  --color-gold: #d9c69c;
-  --color-cream: #f4efe3;
+  --background: var(--perago-light-grey);
+  --foreground: var(--perago-black);
+}
+
+@theme {
+  /* Brand tokens (bg-champagne, text-greige, …) */
+  --color-champagne: #e3cfa3;
+  --color-greige: #cfcac3;
+  --color-lightgrey: #f4f2f0;
+  --color-cream: #fffcf8;
+
+  /* Legacy names used across the app, now pointing at the brand palette */
+  --color-gold: #e3cfa3;
+  --color-charcoal: #000000;
+  --color-jet: #000000;
+  --color-white: #fffcf8; /* pure white is not in the palette */
+  --color-black: #000000;
+
+  /* Neutrals: Light Grey fills, Greige lines, black text at reduced strength */
+  --color-slate-50: #f4f2f0;
+  --color-slate-100: #f4f2f0;
+  --color-slate-200: #cfcac3;
+  --color-slate-300: #cfcac3;
+  --color-slate-400: rgb(0 0 0 / 0.5);
+  --color-slate-500: rgb(0 0 0 / 0.65);
+  --color-slate-600: rgb(0 0 0 / 0.8);
+  --color-slate-700: #000000;
+  --color-slate-800: #000000;
+  --color-slate-900: #000000;
+
+  /* Status colours: urgent/negative = True Black, caution = Champagne, calm fills = Light Grey/Greige */
+  --color-red-50: #f4f2f0;
+  --color-red-200: #cfcac3;
+  --color-red-300: #cfcac3;
+  --color-red-500: #000000;
+  --color-red-600: #000000;
+  --color-red-700: #000000;
+
+  --color-amber-50: #f4f2f0;
+  --color-amber-200: #cfcac3;
+  --color-amber-400: #e3cfa3;
+  --color-amber-500: #e3cfa3;
+  --color-amber-600: #000000;
+  --color-amber-700: #000000;
+  --color-amber-800: #000000;
+
+  --color-emerald-50: #f4f2f0;
+  --color-emerald-400: #000000;
+  --color-emerald-500: #000000;
+  --color-emerald-600: #000000;
+  --color-emerald-700: #000000;
+
+  --color-blue-50: #f4f2f0;
+  --color-blue-500: #cfcac3;
+  --color-blue-700: #000000;
+
+  --color-sky-50: #f4f2f0;
+  --color-sky-500: #cfcac3;
+  --color-sky-700: #000000;
+
+  --color-purple-50: #f4f2f0;
+  --color-purple-500: #cfcac3;
+  --color-purple-700: #000000;
+
+  --color-orange-50: #f4f2f0;
+  --color-orange-500: #cfcac3;
+  --color-orange-700: #000000;
+
+  /* Typography: Libre Baskerville for headings, Helvetica Now for body (Arial/Liberation Sans fallback) */
+  --font-sans: "Helvetica Now Text", "Helvetica Now Display", "Helvetica Now", "Helvetica Neue", Helvetica, Arial,
+    "Liberation Sans", sans-serif;
+  --font-serif: var(--font-libre-baskerville), "Libre Baskerville", "GFS Baskerville", "Liberation Serif", Georgia, serif;
+  /* no third typeface: monospaced spots (passwords) use the body face */
+  --font-mono: var(--font-sans);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-charcoal: var(--color-charcoal);
-  --color-jet: var(--color-jet);
-  --color-gold: var(--color-gold);
-  --color-cream: var(--color-cream);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+
+  /* Headings and key titles (utility classes like font-semibold still win) */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+
+  h1 {
+    font-weight: 700;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Thin Champagne rule used under black header bands */
+.brand-rule {
+  border-bottom: 2px solid var(--perago-champagne);
+}
+
+::selection {
+  background: var(--perago-champagne);
+  color: var(--perago-black);
 }

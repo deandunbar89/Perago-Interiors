@@ -134,7 +134,7 @@ export function sortProjects(projects: ProjectRow[], sort: SortState | null): Pr
 }
 
 function dateCell(date: Date | null) {
-  return date ? format(date, "MMM d, yyyy") : <span className="text-slate-300">—</span>;
+  return date ? format(date, "MMM d, yyyy") : <span className="text-slate-400">—</span>;
 }
 
 export function renderCell(col: ColumnId, project: ProjectRow) {
@@ -142,7 +142,7 @@ export function renderCell(col: ColumnId, project: ProjectRow) {
     case "title":
       return <span className="font-medium text-slate-900">{project.title}</span>;
     case "client":
-      return project.client?.name || <span className="text-slate-300">—</span>;
+      return project.client?.name || <span className="text-slate-400">—</span>;
     case "stage": {
       const colors = STAGE_COLORS[project.stage as Stage];
       return (
@@ -155,10 +155,10 @@ export function renderCell(col: ColumnId, project: ProjectRow) {
       return project.projectType ? (
         PROJECT_TYPE_LABELS[project.projectType as ProjectType]
       ) : (
-        <span className="text-slate-300">—</span>
+        <span className="text-slate-400">—</span>
       );
     case "temperature": {
-      if (!project.temperature) return <span className="text-slate-300">—</span>;
+      if (!project.temperature) return <span className="text-slate-400">—</span>;
       const colors = TEMPERATURE_COLORS[project.temperature as Temperature];
       return (
         <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${colors.bg} ${colors.text}`}>
@@ -172,10 +172,10 @@ export function renderCell(col: ColumnId, project: ProjectRow) {
       return project.location ? (
         <span className="line-clamp-1">{project.location}</span>
       ) : (
-        <span className="text-slate-300">—</span>
+        <span className="text-slate-400">—</span>
       );
     case "reference":
-      return project.reference || <span className="text-slate-300">—</span>;
+      return project.reference || <span className="text-slate-400">—</span>;
     case "submissionDeadline":
       return dateCell(project.submissionDeadline);
     case "siteVisitDate":
@@ -183,7 +183,7 @@ export function renderCell(col: ColumnId, project: ProjectRow) {
     case "awardDate":
       return dateCell(project.awardDate);
     case "owner":
-      return project.owner?.name || <span className="text-slate-300">—</span>;
+      return project.owner?.name || <span className="text-slate-400">—</span>;
     default:
       return null;
   }

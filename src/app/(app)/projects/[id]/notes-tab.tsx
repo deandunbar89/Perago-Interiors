@@ -42,7 +42,7 @@ export default function NotesTab({ project }: { project: ProjectDetail }) {
           <button
             type="submit"
             disabled={pending}
-            className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+            className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
           >
             {pending ? "Adding…" : "Add note"}
           </button>
@@ -62,7 +62,7 @@ export default function NotesTab({ project }: { project: ProjectDetail }) {
                 </p>
                 <button
                   onClick={() => handleDelete(note.id)}
-                  className="text-slate-300 transition hover:text-red-600"
+                  className="text-slate-400 transition hover:text-red-600"
                 >
                   <Trash2 size={14} />
                 </button>

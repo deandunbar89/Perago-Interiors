@@ -52,7 +52,7 @@ export default function ContactsPanel({
             </p>
             <button
               onClick={() => handleDelete(c.id)}
-              className="text-slate-300 transition hover:text-red-600"
+              className="text-slate-400 transition hover:text-red-600"
             >
               <Trash2 size={14} />
             </button>
@@ -117,7 +117,7 @@ export default function ContactsPanel({
             <button
               type="submit"
               disabled={pending}
-              className="w-full rounded-lg bg-charcoal px-3 py-1.5 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+              className="w-full rounded-lg bg-charcoal px-3 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
             >
               {pending ? "Adding…" : "Add contact"}
             </button>

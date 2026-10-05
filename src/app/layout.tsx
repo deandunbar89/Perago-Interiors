@@ -1,18 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Libre_Baskerville } from "next/font/google";
 import AutoRefresh from "@/components/auto-refresh";
 import NotificationBell from "@/components/notification-bell";
 import { auth } from "@/auth";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Brand heading face. Helvetica Now (body) is a licensed font, so it is set via the CSS font stack
+// in globals.css and falls back to Arial / Liberation Sans where it isn't installed.
+const libreBaskerville = Libre_Baskerville({
+  variable: "--font-libre-baskerville",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -21,17 +19,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#15130f",
+  themeColor: "#000000",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const session = await auth();
 
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${libreBaskerville.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <AutoRefresh />
         {session?.user && <NotificationBell />}

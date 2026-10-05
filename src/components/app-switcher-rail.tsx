@@ -39,14 +39,14 @@ export default function AppSwitcherRail({
   const visibleTools = TOOLS.filter((t) => t.section === null || access.sections.includes(t.section));
 
   return (
-    <aside className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-white/10 bg-jet py-4 print:hidden">
-      <Link href="/" className="mb-4 flex h-8 w-8 items-center justify-center">
+    <aside className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-white/10 bg-charcoal py-4 print:hidden">
+      <Link href="/" className="mb-4 flex h-8 w-10 items-center justify-center">
         <Image
-          src="/brand/icon-tile-champagne.png"
-          alt="Perago"
-          width={1200}
-          height={1200}
-          className="h-8 w-8 rounded-lg"
+          src="/brand/logo-symbol-champagne.png"
+          alt="Perago Interiors"
+          width={811}
+          height={290}
+          className="h-auto w-9"
         />
       </Link>
 

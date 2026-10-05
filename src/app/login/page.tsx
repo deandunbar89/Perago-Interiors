@@ -9,20 +9,21 @@ export default async function LoginPage({
   const { callbackUrl } = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-charcoal px-4">
+    <div className="flex min-h-screen items-center justify-center bg-charcoal px-4 py-10">
       <div className="w-full max-w-sm">
-        <div className="mb-8 flex flex-col items-center text-center">
+        <div className="mb-8 flex flex-col items-center">
           <Image
-            src="/brand/logo-icon-perago-champagne.png"
-            alt="Perago"
-            width={1400}
-            height={736}
-            className="mb-2 h-24 w-auto"
+            src="/brand/logo-stacked-champagne.png"
+            alt="Perago Interiors"
+            width={1196}
+            height={725}
+            className="h-32 w-auto"
             priority
           />
-          <p className="text-sm text-white/50">Tender &amp; project management</p>
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6 shadow-sm backdrop-blur-sm">
+        <div className="mb-6 border-t-2 border-champagne" />
+        <p className="mb-6 text-center text-sm text-cream/60">Tender &amp; project management</p>
+        <div className="rounded-xl border border-cream/10 bg-cream/[0.03] p-6">
           <LoginForm callbackUrl={callbackUrl || "/"} />
         </div>
       </div>

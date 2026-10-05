@@ -10,9 +10,12 @@ import {
   type ReportPeriodType,
 } from "@/lib/constants";
 
-const CHARCOAL = "FF15130F";
-const GOLD = "FFD9C69C";
-const CREAM = "FFF4EFE3";
+// Perago brand palette (Brand Guidelines 2026): True Black, Champagne, Greige, Cream
+const CHARCOAL = "FF000000";
+const GOLD = "FFE3CFA3";
+const GREIGE = "FFCFCAC3";
+const BODY_FONT = "Arial"; // Helvetica Now fallback
+const HEADING_FONT = "Libre Baskerville";
 
 const A4_LANDSCAPE: Partial<ExcelJS.PageSetup> = {
   orientation: "landscape",
@@ -27,7 +30,7 @@ function styleHeaderRow(ws: ExcelJS.Worksheet, row: number, lastCol: number, tex
   ws.mergeCells(row, 1, row, lastCol);
   const cell = ws.getCell(row, 1);
   cell.value = text;
-  cell.font = { bold: true, size: 12, color: { argb: GOLD } };
+  cell.font = { name: HEADING_FONT, bold: true, size: 12, color: { argb: GOLD } };
   cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: CHARCOAL } };
   cell.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
   ws.getRow(row).height = 22;
@@ -38,7 +41,7 @@ function styleTableHeader(ws: ExcelJS.Worksheet, row: number, headers: string[])
     const cell = ws.getCell(row, i + 1);
     cell.value = h;
     cell.font = { bold: true, size: 10, color: { argb: CHARCOAL } };
-    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: CREAM } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: GREIGE } };
     cell.border = { bottom: { style: "thin", color: { argb: CHARCOAL } } };
   });
 }
@@ -105,11 +108,11 @@ export async function buildProjectReportWorkbook(
   }
   dash.getCell(1, 5).value = "WEEKLY / MONTHLY REPORT";
   dash.mergeCells(1, 5, 1, 8);
-  dash.getCell(1, 5).font = { bold: true, size: 14, color: { argb: CHARCOAL } };
+  dash.getCell(1, 5).font = { name: HEADING_FONT, bold: true, size: 14, color: { argb: CHARCOAL } };
   dash.getCell(1, 5).alignment = { horizontal: "right" };
   dash.getCell(2, 5).value = `${project.title} — ${periodLabel}`;
   dash.mergeCells(2, 5, 2, 8);
-  dash.getCell(2, 5).font = { size: 11, color: { argb: "FF64748B" } };
+  dash.getCell(2, 5).font = { size: 11, color: { argb: CHARCOAL } };
   dash.getCell(2, 5).alignment = { horizontal: "right" };
   dash.getRow(1).height = 26;
 
@@ -165,7 +168,7 @@ export async function buildProjectReportWorkbook(
   if (project.scheduleItems.length === 0) {
     dash.mergeCells(r, 1, r, 8);
     dash.getCell(r, 1).value = "No program items yet.";
-    dash.getCell(r, 1).font = { italic: true, size: 10, color: { argb: "FF94A3B8" } };
+    dash.getCell(r, 1).font = { italic: true, size: 10, color: { argb: CHARCOAL } };
     r++;
   } else {
     const avgPlanned = Math.round(plannedTotal / project.scheduleItems.length);
@@ -284,7 +287,7 @@ export async function buildProjectReportWorkbook(
   if (lookAhead.length === 0) {
     dash.mergeCells(r, 1, r, 8);
     dash.getCell(r, 1).value = "Nothing scheduled in the next 7 days.";
-    dash.getCell(r, 1).font = { italic: true, size: 10, color: { argb: "FF94A3B8" } };
+    dash.getCell(r, 1).font = { italic: true, size: 10, color: { argb: CHARCOAL } };
   }
 
   // ============ PER-DEPARTMENT SHEETS ============
@@ -298,18 +301,27 @@ export async function buildProjectReportWorkbook(
     if (entries.length === 0) {
       ws.mergeCells(row, 1, row, 8);
       ws.getCell(row, 1).value = "No entry logged for this period.";
-      ws.getCell(row, 1).font = { italic: true, size: 10, color: { argb: "FF94A3B8" } };
+      ws.getCell(row, 1).font = { italic: true, size: 10, color: { argb: CHARCOAL } };
     } else {
       for (const entry of entries) {
         ws.mergeCells(row, 1, row, 8);
         ws.getCell(row, 1).value = `${entry.createdBy?.name ?? "Unknown"} — ${entry.createdAt.toLocaleDateString("en-GB")}`;
-        ws.getCell(row, 1).font = { bold: true, size: 9, color: { argb: "FF64748B" } };
+        ws.getCell(row, 1).font = { bold: true, size: 9, color: { argb: CHARCOAL } };
         row++;
         writeWrappedText(ws, row, 8, entry.content);
         row += 2;
       }
     }
   }
+
+  // Brand typography: every cell without an explicit face uses the body font
+  workbook.eachSheet((sheet) =>
+    sheet.eachRow({ includeEmpty: false }, (row) =>
+      row.eachCell({ includeEmpty: false }, (cell) => {
+        if (!cell.font?.name || cell.font.name === "Calibri") cell.font = { ...cell.font, name: BODY_FONT };
+      })
+    )
+  );
 
   return { workbook, periodLabel };
 }

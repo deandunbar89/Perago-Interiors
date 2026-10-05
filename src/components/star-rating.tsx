@@ -21,7 +21,7 @@ export default function StarRating({
         const star = (
           <Star
             size={size}
-            className={filled ? "fill-amber-400 text-amber-400" : "text-slate-300"}
+            className={filled ? "fill-amber-400 text-amber-400" : "text-slate-400"}
           />
         );
         if (!onChange) return <span key={n}>{star}</span>;

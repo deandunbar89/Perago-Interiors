@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useActionState } from "react";
 import type { Client } from "@prisma/client";
@@ -69,7 +69,7 @@ export default function ClientForm({ client }: { client?: Client }) {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+        className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
       >
         {pending ? "Saving…" : client ? "Save changes" : "Create client"}
       </button>

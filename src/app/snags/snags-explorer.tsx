@@ -169,7 +169,7 @@ export default function SnagsExplorer({
           <ViewSwitcher view={view} onChange={setView} views={["list", "grid", "kanban"]} />
           <button
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg bg-charcoal px-3 py-1.5 text-sm font-medium text-white transition hover:bg-jet"
+            className="flex items-center gap-1.5 rounded-lg bg-charcoal px-3 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal"
           >
             <Plus size={15} />
             Raise snag

@@ -141,14 +141,14 @@ export default async function HomePage({
 
           <div className="mb-10 flex flex-col items-center text-center">
             <Image
-              src="/brand/icon-tile-champagne.png"
-              alt="Perago"
-              width={1200}
-              height={1200}
-              className="mb-4 h-16 w-16 rounded-2xl shadow-sm"
+              src="/brand/logo-stacked-black.png"
+              alt="Perago Interiors"
+              width={1196}
+              height={725}
+              className="mb-6 h-28 w-auto"
               priority
             />
-            <h1 className="text-3xl font-semibold text-slate-900">Perago</h1>
+            <h1 className="sr-only">Perago</h1>
             <p className="mt-1.5 text-sm text-slate-500">Choose where you want to work</p>
           </div>
 
@@ -159,7 +159,7 @@ export default async function HomePage({
                 href={href}
                 className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-gold hover:shadow-md"
               >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-charcoal text-gold transition group-hover:bg-jet">
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-charcoal text-champagne transition group-hover:bg-champagne group-hover:text-charcoal">
                   <Icon size={20} />
                 </div>
                 <h2 className="mb-1.5 text-base font-semibold text-slate-900">{title}</h2>

@@ -131,7 +131,7 @@ export default function VendorsExplorer({ vendors }: { vendors: VendorWithDocs[]
           <ViewSwitcher view={view} onChange={setView} views={["list", "grid"]} />
           <button
             onClick={openAdd}
-            className="flex items-center gap-1.5 rounded-lg bg-charcoal px-3 py-1.5 text-sm font-medium text-white transition hover:bg-jet"
+            className="flex items-center gap-1.5 rounded-lg bg-charcoal px-3 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal"
           >
             <Plus size={15} />
             Add vendor

@@ -43,7 +43,7 @@ export default async function PmDashboardPage() {
         </div>
         <Link
           href="/pm/projects/new"
-          className="flex items-center gap-1.5 rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-jet"
+          className="flex items-center gap-1.5 rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal"
         >
           <Plus size={16} />
           New Project

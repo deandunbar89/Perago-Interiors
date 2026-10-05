@@ -61,7 +61,7 @@ function AddEntryForm({ pmProjectId, section, onDone }: { pmProjectId: string; s
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+        className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
       >
         {pending ? "Saving…" : "Add entry"}
       </button>
@@ -109,7 +109,7 @@ function EntryCard({ entry }: { entry: PmProjectDetail["reportEntries"][number] 
           </button>
           <button
             onClick={handleDelete}
-            className="flex items-center justify-center rounded-lg p-1.5 text-slate-300 transition hover:bg-red-50 hover:text-red-600"
+            className="flex items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
           >
             <Trash2 size={13} />
           </button>
@@ -124,7 +124,7 @@ function EntryCard({ entry }: { entry: PmProjectDetail["reportEntries"][number] 
             <button
               type="submit"
               disabled={pending}
-              className="rounded-lg bg-charcoal px-3 py-1.5 text-xs font-medium text-white transition hover:bg-jet disabled:opacity-60"
+              className="rounded-lg bg-charcoal px-3 py-1.5 text-xs font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
             >
               {pending ? "Saving…" : "Save"}
             </button>
@@ -180,7 +180,7 @@ function GenerateReportForm({ pmProjectId }: { pmProjectId: string }) {
           if (!href) e.preventDefault();
         }}
         className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition ${
-          href ? "bg-charcoal hover:bg-jet" : "cursor-not-allowed bg-slate-300"
+          href ? "bg-charcoal hover:bg-gold hover:text-charcoal" : "cursor-not-allowed bg-slate-300"
         }`}
       >
         Download .xlsx

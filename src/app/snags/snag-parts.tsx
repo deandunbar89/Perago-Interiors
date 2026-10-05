@@ -63,7 +63,7 @@ export function CloseSnagForm({ pmProjectId, snagId }: { pmProjectId: string; sn
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-charcoal px-3 py-1.5 text-xs font-medium text-white transition hover:bg-jet disabled:opacity-60"
+          className="rounded-lg bg-charcoal px-3 py-1.5 text-xs font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
         >
           {pending ? "Closing…" : "Confirm close"}
         </button>

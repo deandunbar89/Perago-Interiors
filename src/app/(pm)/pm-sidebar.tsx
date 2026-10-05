@@ -46,8 +46,8 @@ export default function PmSidebar({
 
   return (
     <aside className="flex w-64 shrink-0 flex-col bg-charcoal">
-      <div className="px-5 py-6">
-        <span className="text-sm font-semibold uppercase tracking-widest text-white/40">
+      <div className="mx-3 mb-4 border-b border-champagne/60 px-2 py-6">
+        <span className="font-serif text-base tracking-wide text-champagne">
           Project Management
         </span>
       </div>

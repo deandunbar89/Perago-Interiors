@@ -67,7 +67,7 @@ export default function NotesTab({ project }: { project: PmProjectDetail }) {
           <button
             type="submit"
             disabled={pending}
-            className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+            className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
           >
             {pending ? "Adding…" : "Add note"}
           </button>
@@ -129,7 +129,7 @@ export default function NotesTab({ project }: { project: PmProjectDetail }) {
                 <button
                   onClick={saveNote}
                   disabled={pending}
-                  className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+                  className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
                 >
                   Save
                 </button>

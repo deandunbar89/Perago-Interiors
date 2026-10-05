@@ -94,7 +94,7 @@ export default function DocumentsTab({ project }: { project: ProjectDetail }) {
         }`}
       >
         <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-transparent py-6 text-center">
-          <UploadCloud size={28} className={dragActive ? "text-slate-600" : "text-slate-300"} />
+          <UploadCloud size={28} className={dragActive ? "text-slate-600" : "text-slate-400"} />
           <p className="text-sm text-slate-600">
             Drag and drop files, paste (Ctrl+V), or{" "}
             <button
@@ -157,7 +157,7 @@ export default function DocumentsTab({ project }: { project: ProjectDetail }) {
             type="button"
             onClick={handleUpload}
             disabled={pending || pendingFiles.length === 0}
-            className="flex items-center gap-1.5 rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+            className="flex items-center gap-1.5 rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
           >
             <Upload size={15} />
             {pending ? "Uploading…" : `Upload${pendingFiles.length ? ` (${pendingFiles.length})` : ""}`}

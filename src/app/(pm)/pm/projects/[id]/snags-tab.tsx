@@ -79,7 +79,7 @@ function CloseSnagForm({ pmProjectId, snagId }: { pmProjectId: string; snagId: s
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-charcoal px-3 py-1.5 text-xs font-medium text-white transition hover:bg-jet disabled:opacity-60"
+          className="rounded-lg bg-charcoal px-3 py-1.5 text-xs font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
         >
           {pending ? "Closing…" : "Confirm close"}
         </button>
@@ -203,7 +203,7 @@ export default function SnagsTab({
             <button
               type="submit"
               disabled={pending}
-              className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+              className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
             >
               {pending ? "Raising…" : "Raise snag"}
             </button>
@@ -251,7 +251,7 @@ export default function SnagsTab({
                       <CloseSnagForm pmProjectId={project.id} snagId={snag.id} />
                       <button
                         onClick={() => handleDelete(snag.id)}
-                        className="flex items-center justify-center rounded-lg p-1.5 text-slate-300 transition hover:bg-red-50 hover:text-red-600"
+                        className="flex items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -287,7 +287,7 @@ export default function SnagsTab({
                   </p>
                   <button
                     onClick={() => handleDelete(snag.id)}
-                    className="mt-2 flex items-center justify-center rounded-lg p-1.5 text-slate-300 transition hover:bg-red-50 hover:text-red-600"
+                    className="mt-2 flex items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                   >
                     <Trash2 size={14} />
                   </button>

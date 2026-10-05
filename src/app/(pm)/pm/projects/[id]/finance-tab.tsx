@@ -19,7 +19,7 @@ const fieldClass =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold";
 
 function DocLink({ document }: { document: { id: string; originalName: string } | null }) {
-  if (!document) return <span className="text-slate-300">—</span>;
+  if (!document) return <span className="text-slate-400">—</span>;
   return (
     <a
       href={`/api/pm-files/${document.id}`}
@@ -91,7 +91,7 @@ function AddOrderForm({ pmProjectId, vendors, onDone }: { pmProjectId: string; v
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+        className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
       >
         {pending ? "Saving…" : "Add order"}
       </button>
@@ -174,7 +174,7 @@ function AddPaymentForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+        className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
       >
         {pending ? "Saving…" : "Add payment"}
       </button>
@@ -254,7 +254,7 @@ export default function FinanceTab({ project, allVendors }: { project: PmProject
           <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
             <table className="w-full min-w-[720px] text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/60 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-champagne bg-charcoal text-left text-xs font-semibold uppercase tracking-wide text-cream">
                   <th className="px-4 py-2.5">Type</th>
                   <th className="px-4 py-2.5">Supplier</th>
                   <th className="px-4 py-2.5">Reference</th>
@@ -282,7 +282,7 @@ export default function FinanceTab({ project, allVendors }: { project: PmProject
                     <td className="px-4 py-2.5">
                       <button
                         onClick={() => handleDeleteOrder(o.id)}
-                        className="flex items-center justify-center rounded-lg p-1.5 text-slate-300 transition hover:bg-red-50 hover:text-red-600"
+                        className="flex items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -321,7 +321,7 @@ export default function FinanceTab({ project, allVendors }: { project: PmProject
           <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
             <table className="w-full min-w-[720px] text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/60 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-champagne bg-charcoal text-left text-xs font-semibold uppercase tracking-wide text-cream">
                   <th className="px-4 py-2.5">Direction</th>
                   <th className="px-4 py-2.5">Supplier / Order</th>
                   <th className="px-4 py-2.5">Reference</th>
@@ -357,7 +357,7 @@ export default function FinanceTab({ project, allVendors }: { project: PmProject
                     <td className="px-4 py-2.5">
                       <button
                         onClick={() => handleDeletePayment(p.id)}
-                        className="flex items-center justify-center rounded-lg p-1.5 text-slate-300 transition hover:bg-red-50 hover:text-red-600"
+                        className="flex items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                       >
                         <Trash2 size={14} />
                       </button>

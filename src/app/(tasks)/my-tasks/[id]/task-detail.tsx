@@ -298,7 +298,7 @@ export default function TaskDetail({
             <button
               type="submit"
               disabled={pending}
-              className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+              className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
             >
               Add note
             </button>
@@ -319,13 +319,13 @@ export default function TaskDetail({
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => startEditNote(note.id, note.body)}
-                      className="text-slate-300 transition hover:text-slate-600"
+                      className="text-slate-400 transition hover:text-slate-600"
                     >
                       <Pencil size={13} />
                     </button>
                     <button
                       onClick={() => removeNote(note.id)}
-                      className="text-slate-300 transition hover:text-red-600"
+                      className="text-slate-400 transition hover:text-red-600"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -349,7 +349,7 @@ export default function TaskDetail({
                       </button>
                       <button
                         onClick={() => saveNote(note.id)}
-                        className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-jet"
+                        className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal"
                       >
                         Save
                       </button>

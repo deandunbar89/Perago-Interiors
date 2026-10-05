@@ -96,7 +96,7 @@ export default function TasksPanel({ deadlineId, tasks }: { deadlineId: string; 
                         ? "bg-amber-50 text-amber-700"
                         : due
                           ? "bg-slate-100 text-slate-600"
-                          : "text-slate-300"
+                          : "text-slate-400"
                   }`}
                 >
                   <Calendar size={11} />
@@ -109,7 +109,7 @@ export default function TasksPanel({ deadlineId, tasks }: { deadlineId: string; 
                 </label>
                 <button
                   onClick={() => remove(t.id)}
-                  className="shrink-0 text-slate-300 transition hover:text-red-600"
+                  className="shrink-0 text-slate-400 transition hover:text-red-600"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -134,7 +134,7 @@ export default function TasksPanel({ deadlineId, tasks }: { deadlineId: string; 
         <button
           type="submit"
           disabled={pending}
-          className="flex shrink-0 items-center gap-1 rounded-lg bg-charcoal px-3 py-1.5 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+          className="flex shrink-0 items-center gap-1 rounded-lg bg-charcoal px-3 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
         >
           <Plus size={14} />
           Add

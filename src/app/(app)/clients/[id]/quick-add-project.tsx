@@ -66,7 +66,7 @@ export default function QuickAddProject({ clientId }: { clientId: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+          className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
         >
           {pending ? "Adding…" : "Add project"}
         </button>

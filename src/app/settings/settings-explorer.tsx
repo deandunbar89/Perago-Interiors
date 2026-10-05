@@ -28,7 +28,7 @@ export default function SettingsExplorer({ members }: { members: Member[] }) {
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
       <table className="w-full min-w-[720px] text-sm">
         <thead>
-          <tr className="border-b border-slate-100 bg-slate-50/60 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <tr className="border-b border-champagne bg-charcoal text-left text-xs font-semibold uppercase tracking-wide text-cream">
             <th className="px-4 py-2.5">Team member</th>
             {APP_SECTIONS.map((section) => (
               <th key={section} className="px-3 py-2.5 text-center">

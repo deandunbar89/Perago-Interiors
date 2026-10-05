@@ -37,7 +37,7 @@ export const ALL_COLUMNS: ColumnId[] = [
 ];
 
 function dateCell(date: Date | null) {
-  return date ? format(date, "MMM d, yyyy") : <span className="text-slate-300">—</span>;
+  return date ? format(date, "MMM d, yyyy") : <span className="text-slate-400">—</span>;
 }
 
 function getProgress(project: PmProjectRow): number | null {
@@ -52,7 +52,7 @@ export function renderCell(col: ColumnId, project: PmProjectRow) {
     case "title":
       return <span className="font-medium text-slate-900">{project.title}</span>;
     case "client":
-      return project.client?.name || <span className="text-slate-300">—</span>;
+      return project.client?.name || <span className="text-slate-400">—</span>;
     case "status": {
       const colors = PM_STATUS_COLORS[project.status as PmStatus];
       return (
@@ -65,7 +65,7 @@ export function renderCell(col: ColumnId, project: PmProjectRow) {
       return formatCurrency(project.value, project.currency);
     case "progress": {
       const p = getProgress(project);
-      return p === null ? <span className="text-slate-300">—</span> : `${p}%`;
+      return p === null ? <span className="text-slate-400">—</span> : `${p}%`;
     }
     case "startDate":
       return dateCell(project.startDate);
@@ -75,7 +75,7 @@ export function renderCell(col: ColumnId, project: PmProjectRow) {
       return project.location ? (
         <span className="line-clamp-1">{project.location}</span>
       ) : (
-        <span className="text-slate-300">—</span>
+        <span className="text-slate-400">—</span>
       );
     default:
       return null;

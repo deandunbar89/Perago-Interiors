@@ -9,7 +9,7 @@ export default function PasswordCell({ id, hasPassword }: { id: string; hasPassw
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  if (!hasPassword) return <span className="text-xs text-slate-300">—</span>;
+  if (!hasPassword) return <span className="text-xs text-slate-400">—</span>;
 
   async function toggleReveal() {
     if (revealed !== null) {

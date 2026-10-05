@@ -71,7 +71,7 @@ function AddHistoryForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+        className="rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
       >
         {pending ? "Saving…" : "Add to history"}
       </button>
@@ -278,7 +278,7 @@ export default function VendorDetail({
                     <button
                       onClick={() => handleDelete(h.id)}
                       title="Remove"
-                      className="text-slate-300 transition hover:text-red-600"
+                      className="text-slate-400 transition hover:text-red-600"
                     >
                       <Trash2 size={14} />
                     </button>

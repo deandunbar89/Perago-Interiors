@@ -88,7 +88,7 @@ export default function CommercialSectionCard({
           <button
             onClick={handleDeleteSection}
             title="Remove section"
-            className="text-slate-300 transition hover:text-red-600"
+            className="text-slate-400 transition hover:text-red-600"
           >
             <Trash2 size={14} />
           </button>
@@ -120,7 +120,7 @@ export default function CommercialSectionCard({
           }`}
         >
           <div className="flex flex-col items-center justify-center gap-1.5 py-3 text-center">
-            <UploadCloud size={22} className={dragActive ? "text-slate-600" : "text-slate-300"} />
+            <UploadCloud size={22} className={dragActive ? "text-slate-600" : "text-slate-400"} />
             <p className="text-xs text-slate-600">
               Drag and drop, paste, or{" "}
               <button
@@ -168,7 +168,7 @@ export default function CommercialSectionCard({
               type="button"
               onClick={handleUpload}
               disabled={pending || pendingFiles.length === 0}
-              className="flex items-center gap-1.5 rounded-lg bg-charcoal px-3 py-1.5 text-xs font-medium text-white transition hover:bg-jet disabled:opacity-60"
+              className="flex items-center gap-1.5 rounded-lg bg-charcoal px-3 py-1.5 text-xs font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
             >
               <Upload size={13} />
               {pending ? "Uploading…" : "Upload"}

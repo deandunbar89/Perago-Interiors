@@ -59,7 +59,7 @@ export default function GridView({
                 </button>
                 <button
                   onClick={() => onDelete(v.id)}
-                  className="flex items-center justify-center rounded-lg p-1.5 text-slate-300 transition hover:bg-red-50 hover:text-red-600"
+                  className="flex items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                 >
                   <Trash2 size={13} />
                 </button>

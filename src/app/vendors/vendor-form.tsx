@@ -152,7 +152,7 @@ export default function VendorForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-jet disabled:opacity-60"
+        className="w-full rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
       >
         {pending ? "Saving…" : vendor ? "Save changes" : "Add vendor"}
       </button>

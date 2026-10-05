@@ -34,7 +34,7 @@ export default function ListView({
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
       <table className="w-full min-w-[720px] text-sm">
         <thead>
-          <tr className="border-b border-slate-100 bg-slate-50/60 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <tr className="border-b border-champagne bg-charcoal text-left text-xs font-semibold uppercase tracking-wide text-cream">
             {columns.map((col) => {
               const active = sort?.column === col;
               return (
@@ -53,7 +53,7 @@ export default function ListView({
                         <ArrowDown size={12} />
                       )
                     ) : (
-                      <ArrowUpDown size={12} className="text-slate-300" />
+                      <ArrowUpDown size={12} className="text-slate-400" />
                     )}
                   </button>
                 </th>
