@@ -141,11 +141,11 @@ export default async function HomePage({
 
           <div className="mb-10 flex flex-col items-center text-center">
             <Image
-              src="/brand/logo-stacked-black.png"
+              src="/brand/logo-icon-black.png"
               alt="Perago Interiors"
-              width={1196}
-              height={725}
-              className="mb-6 h-28 w-auto"
+              width={1200}
+              height={201}
+              className="mb-6 h-auto w-44"
               priority
             />
             <h1 className="sr-only">Perago</h1>

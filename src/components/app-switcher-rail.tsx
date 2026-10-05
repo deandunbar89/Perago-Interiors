@@ -40,13 +40,13 @@ export default function AppSwitcherRail({
 
   return (
     <aside className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-white/10 bg-charcoal py-4 print:hidden">
-      <Link href="/" className="mb-4 flex h-8 w-10 items-center justify-center">
+      <Link href="/" className="mb-4 flex h-8 w-12 items-center justify-center">
         <Image
-          src="/brand/logo-symbol-champagne.png"
+          src="/brand/logo-icon-champagne.png"
           alt="Perago Interiors"
-          width={811}
-          height={290}
-          className="h-auto w-9"
+          width={1200}
+          height={201}
+          className="h-auto w-11"
         />
       </Link>
 

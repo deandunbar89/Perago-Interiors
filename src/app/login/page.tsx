@@ -13,11 +13,11 @@ export default async function LoginPage({
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
           <Image
-            src="/brand/logo-stacked-champagne.png"
+            src="/brand/logo-full-champagne.png"
             alt="Perago Interiors"
-            width={1196}
-            height={725}
-            className="h-32 w-auto"
+            width={1600}
+            height={760}
+            className="h-28 w-auto"
             priority
           />
         </div>
