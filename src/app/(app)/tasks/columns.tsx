@@ -14,6 +14,15 @@ export const DEFAULT_COLUMNS: ColumnId[] = ["title", "project", "dueDate"];
 
 export const ALL_COLUMNS: ColumnId[] = ["title", "deadline", "project", "status", "dueDate"];
 
+/** Starting column widths in px; the table scrolls sideways if they add up to more than the screen. */
+export const DEFAULT_WIDTHS: Record<ColumnId, number> = {
+  title: 340,
+  deadline: 160,
+  project: 220,
+  status: 90,
+  dueDate: 140,
+};
+
 export type SortDirection = "asc" | "desc";
 export type SortState = { column: ColumnId; direction: SortDirection };
 

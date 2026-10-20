@@ -236,6 +236,7 @@ export default function MyTasksExplorer({
         <ListView
           tasks={sortedForList}
           columns={columns}
+          onColumnsChange={setColumns}
           sort={sort}
           onSortChange={setSort}
           onToggle={toggleDone}

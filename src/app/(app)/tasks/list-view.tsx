@@ -1,12 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import { format, isPast, isToday, startOfDay } from "date-fns";
-import { ArrowDown, ArrowUp, ArrowUpDown, Calendar, Flag, Trash2 } from "lucide-react";
-import { COLUMN_LABELS, DEFAULT_SORT_DIRECTION, type ColumnId, type SortState } from "./columns";
+import { Calendar, Flag, Trash2 } from "lucide-react";
+import ColumnHeaderCell from "@/components/column-header-cell";
+import { useColumnLayout } from "@/components/use-column-layout";
+import { COLUMN_LABELS, DEFAULT_SORT_DIRECTION, DEFAULT_WIDTHS, type ColumnId, type SortState } from "./columns";
 import type { TaskRow } from "./types";
+
+const WIDTHS_KEY = "tendercrm.tasks.colwidths";
+const CHECKBOX_COL = 44;
+const ACTIONS_COL = 56;
 
 export default function ListView({
   tasks,
   columns,
+  onColumnsChange,
   sort,
   onSortChange,
   onToggle,
@@ -15,12 +24,20 @@ export default function ListView({
 }: {
   tasks: TaskRow[];
   columns: ColumnId[];
+  onColumnsChange: (columns: ColumnId[]) => void;
   sort: SortState | null;
   onSortChange: (sort: SortState) => void;
   onToggle: (task: TaskRow) => void;
   onChangeDueDate: (id: string, value: string) => void;
   onDelete: (id: string) => void;
 }) {
+  const layout = useColumnLayout({
+    storageKey: WIDTHS_KEY,
+    columns,
+    onColumnsChange,
+    defaultWidths: DEFAULT_WIDTHS,
+  });
+
   if (tasks.length === 0) {
     return (
       <p className="rounded-xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-400 shadow-sm">
@@ -52,9 +69,13 @@ export default function ListView({
         );
       case "deadline":
         return task.task ? (
-          <Link href={`/deadlines/${task.task.id}`} className="flex items-center gap-1 hover:underline">
-            <Flag size={11} />
-            {task.task.title}
+          <Link
+            href={`/deadlines/${task.task.id}`}
+            title={task.task.title}
+            className="flex max-w-full items-center gap-1 hover:underline"
+          >
+            <Flag size={11} className="shrink-0" />
+            <span className="truncate">{task.task.title}</span>
           </Link>
         ) : (
           <span className="text-slate-400">—</span>
@@ -106,41 +127,38 @@ export default function ListView({
 
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-      <table className="w-full min-w-[640px] text-sm">
+      {/* Fixed layout so each column keeps the width it was dragged to; the last (auto) column soaks up any spare room. */}
+      <table
+        className="w-full table-fixed text-sm"
+        style={{ minWidth: layout.totalWidth + CHECKBOX_COL + ACTIONS_COL }}
+      >
+        <colgroup>
+          <col style={{ width: CHECKBOX_COL }} />
+          {columns.map((col) => (
+            <col key={col} style={{ width: layout.widthOf(col) }} />
+          ))}
+          <col style={{ minWidth: ACTIONS_COL }} />
+        </colgroup>
         <thead>
           <tr className="border-b border-champagne bg-charcoal text-left text-xs font-semibold uppercase tracking-wide text-cream">
-            <th className="w-10 px-4 py-2.5" />
-            {columns.map((col) => {
-              const active = sort?.column === col;
-              return (
-                <th key={col} className="whitespace-nowrap px-4 py-2.5">
-                  <button
-                    onClick={() => handleHeaderClick(col)}
-                    className={`flex items-center gap-1 transition hover:text-slate-800 ${
-                      active ? "text-slate-800" : ""
-                    }`}
-                  >
-                    {COLUMN_LABELS[col]}
-                    {active ? (
-                      sort.direction === "asc" ? (
-                        <ArrowUp size={12} />
-                      ) : (
-                        <ArrowDown size={12} />
-                      )
-                    ) : (
-                      <ArrowUpDown size={12} className="text-slate-400" />
-                    )}
-                  </button>
-                </th>
-              );
-            })}
-            <th className="w-10 px-4 py-2.5" />
+            <th className="px-3 py-2.5" />
+            {columns.map((col) => (
+              <ColumnHeaderCell
+                key={col}
+                col={col}
+                label={COLUMN_LABELS[col]}
+                layout={layout}
+                sortDirection={sort?.column === col ? sort.direction : null}
+                onSort={() => handleHeaderClick(col)}
+              />
+            ))}
+            <th className="px-4 py-2.5" />
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
           {tasks.map((task) => (
             <tr key={task.id} className="transition hover:bg-slate-50">
-              <td className="px-4 py-2.5">
+              <td className="px-3 py-2.5">
                 <input
                   type="checkbox"
                   checked={task.status === "DONE"}
@@ -149,7 +167,7 @@ export default function ListView({
                 />
               </td>
               {columns.map((col) => (
-                <td key={col} className="whitespace-nowrap px-4 py-2.5">
+                <td key={col} className="overflow-hidden text-ellipsis whitespace-nowrap px-4 py-2.5">
                   {renderCell(col, task)}
                 </td>
               ))}
