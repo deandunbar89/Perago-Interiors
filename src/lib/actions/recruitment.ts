@@ -9,8 +9,10 @@ import { saveUploadedFile, deleteUploadedFile } from "@/lib/storage";
 import { mirrorToDrive } from "@/lib/google-drive";
 import { notifyAll, notifyUser } from "@/lib/notify";
 import { parseDubaiLocal } from "@/lib/dubai-time";
+import { readCv, type CvFields } from "@/lib/cv-reader";
 import {
   CANDIDATE_STAGES,
+  EMIRATES,
   EMPLOYMENT_TYPES,
   INTERVIEW_RECOMMENDATIONS,
   INTERVIEW_ROUNDS,
@@ -162,6 +164,9 @@ function readCandidate(formData: FormData) {
     currentRole: text(formData, "currentRole"),
     currentCompany: text(formData, "currentCompany"),
     location: text(formData, "location"),
+    emirate: pick(formData.get("emirate"), [...EMIRATES, ""] as const, "") || null,
+    nationality: text(formData, "nationality"),
+    yearsExperience: wholeNumber(formData.get("yearsExperience")),
     source: text(formData, "source"),
     noticePeriod: text(formData, "noticePeriod"),
     expectedSalary: text(formData, "expectedSalary"),
@@ -169,8 +174,30 @@ function readCandidate(formData: FormData) {
   };
 }
 
+function wholeNumber(value: FormDataEntryValue | null) {
+  if (typeof value !== "string" || !value.trim()) return null;
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) && n >= 0 && n <= 80 ? n : null;
+}
+
 function realFile(value: FormDataEntryValue | null): File | null {
   return value instanceof File && value.size > 0 ? value : null;
+}
+
+const MAX_CV_READ_BYTES = 15 * 1024 * 1024;
+
+/** Reads an uploaded CV and returns the candidate's details so the form can be pre-filled.
+ * Nothing is saved here — a person checks the details and saves. */
+export async function readCandidateCv(
+  formData: FormData
+): Promise<{ ok: true; fields: CvFields } | { ok: false; error: string }> {
+  await requireRecruitment();
+
+  const file = realFile(formData.get("cv"));
+  if (!file) return { ok: false, error: "Choose a CV first." };
+  if (file.size > MAX_CV_READ_BYTES) return { ok: false, error: "That file is too big to read automatically (15MB max)." };
+
+  return readCv({ name: file.name, type: file.type, buffer: Buffer.from(await file.arrayBuffer()) });
 }
 
 export async function createCandidate(_prev: unknown, formData: FormData) {

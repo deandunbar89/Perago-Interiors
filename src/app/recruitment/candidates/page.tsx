@@ -28,6 +28,7 @@ export default async function CandidatesPage() {
         candidates={candidates}
         vacancies={allVacancies}
         storageKey="tendercrm.recruitment.candidates.view"
+        cvReading={!!process.env.ANTHROPIC_API_KEY}
       />
     </div>
   );

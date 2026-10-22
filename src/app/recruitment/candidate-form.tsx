@@ -1,26 +1,36 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { Loader2, Sparkles } from "lucide-react";
 import type { Candidate } from "@prisma/client";
-import { createCandidate, updateCandidate } from "@/lib/actions/recruitment";
+import { createCandidate, readCandidateCv, updateCandidate } from "@/lib/actions/recruitment";
+import { EMIRATES, EMIRATE_LABELS } from "@/lib/constants";
 import { FIELD, LABEL, PRIMARY_BUTTON } from "./parts";
 
 const SOURCES = ["LinkedIn", "Referral", "Recruitment agency", "Job board", "Company website", "Walk-in"];
 
-/** Add a candidate (with their CV) or edit one's details. */
+type ReadState = { status: "idle" } | { status: "reading" } | { status: "done" } | { status: "error"; message: string };
+
+/** Add a candidate (with their CV) or edit one's details. When CV reading is switched on, choosing a CV
+ * fills in the details for the recruiter to check. */
 export default function CandidateForm({
   vacancies,
   fixedVacancyId,
   candidate,
+  cvReading = false,
   onDone,
 }: {
   vacancies: { id: string; title: string }[];
   /** When set (adding from a vacancy's own page) the vacancy isn't asked for. */
   fixedVacancyId?: string;
   candidate?: Candidate;
+  /** Whether the server can read CVs (the AI key is set). */
+  cvReading?: boolean;
   onDone: () => void;
 }) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [readState, setReadState] = useState<ReadState>({ status: "idle" });
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(formData: FormData) {
@@ -40,8 +50,74 @@ export default function CandidateForm({
     });
   }
 
+  /** Fills a field only if it's still empty, so anything the recruiter already typed is never overwritten. */
+  function fillIfEmpty(name: string, value: string | number | null | undefined) {
+    const el = formRef.current?.elements.namedItem(name);
+    if (value === null || value === undefined || value === "") return;
+    if (el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement) {
+      if (!el.value) el.value = String(value);
+    }
+  }
+
+  async function handleCvChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !cvReading) return;
+
+    setReadState({ status: "reading" });
+    const data = new FormData();
+    data.append("cv", file);
+    try {
+      const result = await readCandidateCv(data);
+      if (!result.ok) {
+        setReadState({ status: "error", message: result.error });
+        return;
+      }
+      const f = result.fields;
+      fillIfEmpty("name", f.name);
+      fillIfEmpty("email", f.email);
+      fillIfEmpty("phone", f.phone);
+      fillIfEmpty("currentRole", f.currentRole);
+      fillIfEmpty("currentCompany", f.currentCompany);
+      fillIfEmpty("location", f.location);
+      fillIfEmpty("emirate", f.emirate);
+      fillIfEmpty("nationality", f.nationality);
+      fillIfEmpty("yearsExperience", f.yearsExperience);
+      fillIfEmpty("notes", f.summary);
+      setReadState({ status: "done" });
+    } catch {
+      setReadState({ status: "error", message: "CV reading hit a problem. You can fill the details in by hand." });
+    }
+  }
+
+  const reading = readState.status === "reading";
+
   return (
-    <form action={handleSubmit} className="space-y-3">
+    <form ref={formRef} action={handleSubmit} className="space-y-3">
+      {!candidate && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <label className={LABEL}>CV {cvReading && <span className="font-normal text-slate-400">— choose it first and the details below fill in automatically</span>}</label>
+          <input
+            name="cv"
+            type="file"
+            onChange={handleCvChosen}
+            className="block w-full text-xs text-slate-600 file:mr-2 file:rounded-md file:border-0 file:bg-white file:px-2.5 file:py-1.5 file:text-xs file:font-medium"
+          />
+          {reading && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-600">
+              <Loader2 size={13} className="animate-spin" />
+              Reading the CV…
+            </p>
+          )}
+          {readState.status === "done" && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700">
+              <Sparkles size={13} />
+              Filled in from the CV. Please check the details before saving.
+            </p>
+          )}
+          {readState.status === "error" && <p className="mt-2 text-xs text-amber-700">{readState.message}</p>}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={LABEL}>Full name *</label>
@@ -95,9 +171,34 @@ export default function CandidateForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className={LABEL}>Based in</label>
+          <label className={LABEL}>Based in (area or city)</label>
           <input name="location" defaultValue={candidate?.location ?? ""} className={FIELD} />
         </div>
+        <div>
+          <label className={LABEL}>Emirate</label>
+          <select name="emirate" defaultValue={candidate?.emirate ?? ""} className={FIELD}>
+            <option value="">Not set</option>
+            {EMIRATES.map((e) => (
+              <option key={e} value={e}>
+                {EMIRATE_LABELS[e]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={LABEL}>Nationality</label>
+          <input name="nationality" defaultValue={candidate?.nationality ?? ""} className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>Years of experience</label>
+          <input name="yearsExperience" type="number" min={0} max={80} defaultValue={candidate?.yearsExperience ?? ""} className={FIELD} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={LABEL}>Source</label>
           <input name="source" list="candidate-sources" defaultValue={candidate?.source ?? ""} placeholder="Where they came from" className={FIELD} />
@@ -107,40 +208,36 @@ export default function CandidateForm({
             ))}
           </datalist>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={LABEL}>Notice period</label>
           <input name="noticePeriod" defaultValue={candidate?.noticePeriod ?? ""} placeholder="e.g. 30 days" className={FIELD} />
         </div>
-        <div>
-          <label className={LABEL}>Expected salary</label>
-          <input name="expectedSalary" defaultValue={candidate?.expectedSalary ?? ""} placeholder="e.g. AED 18,000" className={FIELD} />
-        </div>
+      </div>
+
+      <div>
+        <label className={LABEL}>Expected salary</label>
+        <input name="expectedSalary" defaultValue={candidate?.expectedSalary ?? ""} placeholder="e.g. AED 18,000" className={FIELD} />
       </div>
 
       <div>
         <label className={LABEL}>Notes</label>
-        <textarea name="notes" rows={2} defaultValue={candidate?.notes ?? ""} className={FIELD} />
+        <textarea name="notes" rows={3} defaultValue={candidate?.notes ?? ""} className={FIELD} />
       </div>
 
       {!candidate && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={LABEL}>CV</label>
-            <input name="cv" type="file" className="block w-full text-xs text-slate-600 file:mr-2 file:rounded-md file:border-0 file:bg-slate-100 file:px-2.5 file:py-1.5 file:text-xs file:font-medium" />
-          </div>
-          <div>
-            <label className={LABEL}>Cover letter</label>
-            <input name="coverLetter" type="file" className="block w-full text-xs text-slate-600 file:mr-2 file:rounded-md file:border-0 file:bg-slate-100 file:px-2.5 file:py-1.5 file:text-xs file:font-medium" />
-          </div>
+        <div>
+          <label className={LABEL}>Cover letter</label>
+          <input
+            name="coverLetter"
+            type="file"
+            className="block w-full text-xs text-slate-600 file:mr-2 file:rounded-md file:border-0 file:bg-slate-100 file:px-2.5 file:py-1.5 file:text-xs file:font-medium"
+          />
         </div>
       )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <button type="submit" disabled={pending} className={PRIMARY_BUTTON}>
-        {pending ? "Saving…" : candidate ? "Save changes" : "Add candidate"}
+      <button type="submit" disabled={pending || reading} className={PRIMARY_BUTTON}>
+        {pending ? "Saving…" : reading ? "Reading CV…" : candidate ? "Save changes" : "Add candidate"}
       </button>
     </form>
   );

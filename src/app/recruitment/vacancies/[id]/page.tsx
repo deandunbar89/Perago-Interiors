@@ -79,6 +79,7 @@ export default async function VacancyPage({ params }: { params: Promise<{ id: st
           vacancies={[{ id: vacancy.id, title: vacancy.title }]}
           fixedVacancyId={vacancy.id}
           storageKey="tendercrm.recruitment.vacancy.view"
+          cvReading={!!process.env.ANTHROPIC_API_KEY}
         />
       </div>
 

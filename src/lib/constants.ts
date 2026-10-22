@@ -578,3 +578,26 @@ export const RECRUITMENT_DRIVE_FOLDERS: Record<RecruitmentDocType, string> = {
   OFFER_LETTER: "Offer Letter",
   OTHER: "Other Documents",
 };
+
+export const EMIRATES = [
+  "DUBAI",
+  "ABU_DHABI",
+  "SHARJAH",
+  "AJMAN",
+  "RAS_AL_KHAIMAH",
+  "FUJAIRAH",
+  "UMM_AL_QUWAIN",
+  "OUTSIDE_UAE",
+] as const;
+export type Emirate = (typeof EMIRATES)[number];
+
+export const EMIRATE_LABELS: Record<Emirate, string> = {
+  DUBAI: "Dubai",
+  ABU_DHABI: "Abu Dhabi",
+  SHARJAH: "Sharjah",
+  AJMAN: "Ajman",
+  RAS_AL_KHAIMAH: "Ras Al Khaimah",
+  FUJAIRAH: "Fujairah",
+  UMM_AL_QUWAIN: "Umm Al Quwain",
+  OUTSIDE_UAE: "Outside the UAE",
+};

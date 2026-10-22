@@ -795,6 +795,17 @@ model ScheduleItem {
 
 // ───────────────────────── Recruitment ─────────────────────────
 
+enum Emirate {
+  DUBAI
+  ABU_DHABI
+  SHARJAH
+  AJMAN
+  RAS_AL_KHAIMAH
+  FUJAIRAH
+  UMM_AL_QUWAIN
+  OUTSIDE_UAE
+}
+
 enum VacancyStatus {
   DRAFT
   OPEN
@@ -880,6 +891,9 @@ model Candidate {
   currentRole     String?
   currentCompany  String?
   location        String?
+  emirate         Emirate?
+  nationality     String?
+  yearsExperience Int?
   source          String?
   noticePeriod    String?
   expectedSalary  String?

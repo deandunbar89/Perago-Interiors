@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getRecruitmentTeam } from "@/lib/recruitment-team";
 import { candidateScore } from "@/lib/recruitment-score";
+import { EMIRATE_LABELS } from "@/lib/constants";
 import DocCard from "../../doc-card";
 import RecruitmentTasksPanel from "../../tasks-panel";
 import { taskRowInclude } from "../../types";
@@ -51,6 +52,9 @@ export default async function CandidatePage({
     { label: "Email", value: candidate.email, href: candidate.email ? `mailto:${candidate.email}` : null },
     { label: "Phone", value: candidate.phone, href: candidate.phone ? `tel:${candidate.phone}` : null },
     { label: "Based in", value: candidate.location },
+    { label: "Emirate", value: candidate.emirate ? EMIRATE_LABELS[candidate.emirate] : null },
+    { label: "Nationality", value: candidate.nationality },
+    { label: "Experience", value: candidate.yearsExperience !== null ? `${candidate.yearsExperience} years` : null },
     { label: "Source", value: candidate.source },
     { label: "Notice period", value: candidate.noticePeriod },
     { label: "Expected salary", value: candidate.expectedSalary },

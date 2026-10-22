@@ -37,12 +37,15 @@ export default function CandidateExplorer({
   vacancies,
   fixedVacancyId,
   storageKey,
+  cvReading = false,
 }: {
   candidates: CandidateRow[];
   vacancies: { id: string; title: string }[];
   /** On a vacancy's own page the list is already that vacancy's candidates, so the vacancy filter and column go. */
   fixedVacancyId?: string;
   storageKey: string;
+  /** Whether CVs can be read automatically (the AI key is set on the server). */
+  cvReading?: boolean;
 }) {
   const [view, setView] = useState<ExplorerView>("list");
   const [ready, setReady] = useState(false);
@@ -177,7 +180,7 @@ export default function CandidateExplorer({
       )}
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add candidate" size="lg">
-        <CandidateForm vacancies={vacancies} fixedVacancyId={fixedVacancyId} onDone={() => setModalOpen(false)} />
+        <CandidateForm vacancies={vacancies} fixedVacancyId={fixedVacancyId} cvReading={cvReading} onDone={() => setModalOpen(false)} />
       </Modal>
     </div>
   );
