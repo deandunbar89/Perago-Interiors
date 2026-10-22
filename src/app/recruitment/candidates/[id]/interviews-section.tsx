@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { CalendarPlus, Pencil, Plus, Trash2 } from "lucide-react";
 import Modal from "@/components/modal";
 import { deleteInterview } from "@/lib/actions/recruitment";
 import { INTERVIEW_ROUND_LABELS, SCORE_CRITERIA } from "@/lib/constants";
@@ -60,6 +60,14 @@ export default function InterviewsSection({
                 <div className="flex items-center gap-2">
                   {iv.recommendation && <RecommendationBadge value={iv.recommendation} />}
                   <ScoreChip score={interviewAverage(iv.scores)} />
+                  <a
+                    href={`/api/recruitment-ics/${iv.id}`}
+                    download
+                    title="Add to calendar"
+                    className="text-slate-400 transition hover:text-slate-700"
+                  >
+                    <CalendarPlus size={14} />
+                  </a>
                   <button onClick={() => setModal({ interview: iv })} title="Edit" className="text-slate-400 transition hover:text-slate-700">
                     <Pencil size={14} />
                   </button>
