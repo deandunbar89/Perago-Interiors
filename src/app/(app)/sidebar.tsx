@@ -21,7 +21,7 @@ export default function Sidebar({
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col bg-charcoal">
+    <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col self-start overflow-y-auto bg-charcoal">
       <div className="mx-3 mb-4 border-b border-champagne/60 px-2 py-6">
         <span className="font-serif text-base tracking-wide text-champagne">
           CRM

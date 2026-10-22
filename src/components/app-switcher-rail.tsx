@@ -39,7 +39,7 @@ export default function AppSwitcherRail({
   const visibleTools = TOOLS.filter((t) => t.section === null || access.sections.includes(t.section));
 
   return (
-    <aside className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-white/10 bg-charcoal py-4 print:hidden">
+    <aside className="sticky top-0 flex h-screen w-16 shrink-0 flex-col items-center gap-1 self-start overflow-y-auto border-r border-white/10 bg-charcoal py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden print:hidden">
       <Link href="/" className="mb-4 flex h-8 w-12 items-center justify-center">
         <Image
           src="/brand/logo-icon-champagne.png"
