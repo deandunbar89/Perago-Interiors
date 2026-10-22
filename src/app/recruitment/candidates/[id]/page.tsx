@@ -15,8 +15,14 @@ import OfferSection from "./offer-section";
 
 export const dynamic = "force-dynamic";
 
-export default async function CandidatePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function CandidatePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ upload?: string }>;
+}) {
+  const [{ id }, { upload }] = await Promise.all([params, searchParams]);
   const session = await auth();
 
   const [candidate, vacancies, tasks, team] = await Promise.all([
@@ -60,6 +66,12 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
         <ArrowLeft size={14} />
         {candidate.vacancy.title}
       </Link>
+
+      {upload === "failed" && (
+        <p className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          {candidate.name} was saved, but a file didn&apos;t upload. Add it again in the CV or Cover letter box below.
+        </p>
+      )}
 
       <CandidateHeader
         candidate={candidate}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import type { Vacancy } from "@prisma/client";
 import { createVacancy, updateVacancy } from "@/lib/actions/recruitment";
 import {
@@ -12,9 +11,8 @@ import {
 } from "@/lib/constants";
 import { FIELD, LABEL, PRIMARY_BUTTON } from "./parts";
 
-/** Create or edit a vacancy. After creating one, jumps to its page so candidates can be added straight away. */
+/** Create or edit a vacancy. After creating one, the action opens its page so candidates can be added straight away. */
 export default function VacancyForm({ vacancy, onDone }: { vacancy?: Vacancy; onDone: () => void }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -26,12 +24,9 @@ export default function VacancyForm({ vacancy, onDone }: { vacancy?: Vacancy; on
         if (result?.error) setError(result.error);
         else onDone();
       } else {
+        // On success the action redirects to the new vacancy's page.
         const result = await createVacancy(undefined, formData);
         if (result?.error) setError(result.error);
-        else {
-          onDone();
-          if (result?.id) router.push(`/recruitment/vacancies/${result.id}`);
-        }
       }
     });
   }

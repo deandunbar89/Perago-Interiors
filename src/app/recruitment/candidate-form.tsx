@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import type { Candidate } from "@prisma/client";
 import { createCandidate, updateCandidate } from "@/lib/actions/recruitment";
 import { FIELD, LABEL, PRIMARY_BUTTON } from "./parts";
@@ -21,7 +20,6 @@ export default function CandidateForm({
   candidate?: Candidate;
   onDone: () => void;
 }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -34,15 +32,11 @@ export default function CandidateForm({
         else onDone();
         return;
       }
+      // The form closes and the list updates in place, so several CVs can be added in a row.
+      // (If a file fails to upload, the action opens the saved candidate so it can be retried.)
       const result = await createCandidate(undefined, formData);
-      if (result?.error) {
-        setError(result.error);
-        // The candidate was saved even though a file failed — open them so the file can be retried.
-        if (result.id) router.push(`/recruitment/candidates/${result.id}`);
-      } else {
-        onDone();
-        if (result?.id) router.push(`/recruitment/candidates/${result.id}`);
-      }
+      if (result?.error) setError(result.error);
+      else onDone();
     });
   }
 

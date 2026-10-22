@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getAccess } from "@/lib/section-access";
@@ -80,7 +81,9 @@ export async function createVacancy(_prev: unknown, formData: FormData) {
   });
 
   refresh();
-  return { success: true, id: vacancy.id };
+  // A server-side redirect is the reliable way to move on after a save: a client-side push can be
+  // cancelled by the page refresh the save triggers.
+  redirect(`/recruitment/vacancies/${vacancy.id}`);
 }
 
 export async function updateVacancy(vacancyId: string, _prev: unknown, formData: FormData) {
@@ -191,9 +194,10 @@ export async function createCandidate(_prev: unknown, formData: FormData) {
     const cover = realFile(formData.get("coverLetter"));
     if (cv) await storeDocument(userId, candidate, vacancy.title, "CV", cv);
     if (cover) await storeDocument(userId, candidate, vacancy.title, "COVER_LETTER", cover);
-  } catch (err) {
+  } catch {
+    // The candidate is saved but a file didn't upload — open them so the file can be retried.
     refresh();
-    return { error: err instanceof Error ? err.message : "Upload failed", id: candidate.id };
+    redirect(`/recruitment/candidates/${candidate.id}?upload=failed`);
   }
 
   await notifyAll(
@@ -203,7 +207,7 @@ export async function createCandidate(_prev: unknown, formData: FormData) {
   );
 
   refresh();
-  return { success: true, id: candidate.id };
+  return { success: true };
 }
 
 export async function updateCandidate(candidateId: string, _prev: unknown, formData: FormData) {
