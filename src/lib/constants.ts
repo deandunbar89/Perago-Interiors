@@ -371,7 +371,7 @@ export const SNAG_CATEGORY_LABELS: Record<SnagCategory, string> = {
   PUNCH_ITEM: "Punch Item",
 };
 
-export const APP_SECTIONS = ["CRM", "PM", "TASKS", "SNAGS", "VENDORS", "AI", "REPORTS", "FINANCE"] as const;
+export const APP_SECTIONS = ["CRM", "PM", "TASKS", "SNAGS", "VENDORS", "AI", "REPORTS", "FINANCE", "RECRUITMENT"] as const;
 export type AppSection = (typeof APP_SECTIONS)[number];
 
 export const APP_SECTION_LABELS: Record<AppSection, string> = {
@@ -383,6 +383,7 @@ export const APP_SECTION_LABELS: Record<AppSection, string> = {
   AI: "AI",
   REPORTS: "Reports",
   FINANCE: "Finance",
+  RECRUITMENT: "Recruitment",
 };
 
 export const NOTIFICATION_TYPES = [...APP_SECTIONS, "MENTION"] as const;
@@ -452,3 +453,128 @@ export function formatCurrency(value: number | null | undefined, currency = "AED
     maximumFractionDigits: 0,
   }).format(value);
 }
+
+// ───────────────────────── Recruitment ─────────────────────────
+
+export const VACANCY_STATUSES = ["DRAFT", "OPEN", "ON_HOLD", "FILLED", "CLOSED"] as const;
+export type VacancyStatus = (typeof VACANCY_STATUSES)[number];
+
+export const VACANCY_STATUS_LABELS: Record<VacancyStatus, string> = {
+  DRAFT: "Draft",
+  OPEN: "Open",
+  ON_HOLD: "On hold",
+  FILLED: "Filled",
+  CLOSED: "Closed",
+};
+
+export const VACANCY_STATUS_COLORS: Record<VacancyStatus, { bg: string; text: string }> = {
+  DRAFT: { bg: "bg-slate-100", text: "text-slate-600" },
+  OPEN: { bg: "bg-emerald-50", text: "text-emerald-700" },
+  ON_HOLD: { bg: "bg-amber-50", text: "text-amber-700" },
+  FILLED: { bg: "bg-blue-50", text: "text-blue-700" },
+  CLOSED: { bg: "bg-slate-100", text: "text-slate-500" },
+};
+
+export const EMPLOYMENT_TYPES = ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"] as const;
+export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
+
+export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = {
+  FULL_TIME: "Full-time",
+  PART_TIME: "Part-time",
+  CONTRACT: "Contract",
+  INTERN: "Internship",
+};
+
+export const CANDIDATE_STAGES = ["NEW", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED"] as const;
+export type CandidateStage = (typeof CANDIDATE_STAGES)[number];
+
+export const CANDIDATE_STAGE_LABELS: Record<CandidateStage, string> = {
+  NEW: "New",
+  SCREENING: "Screening",
+  INTERVIEW: "Interview",
+  OFFER: "Offer",
+  HIRED: "Hired",
+  REJECTED: "Rejected",
+};
+
+export const CANDIDATE_STAGE_COLORS: Record<CandidateStage, { bg: string; text: string }> = {
+  NEW: { bg: "bg-slate-100", text: "text-slate-600" },
+  SCREENING: { bg: "bg-blue-50", text: "text-blue-700" },
+  INTERVIEW: { bg: "bg-violet-50", text: "text-violet-700" },
+  OFFER: { bg: "bg-amber-50", text: "text-amber-700" },
+  HIRED: { bg: "bg-emerald-50", text: "text-emerald-700" },
+  REJECTED: { bg: "bg-red-50", text: "text-red-700" },
+};
+
+export const INTERVIEW_ROUNDS = ["SCREENING_CALL", "FIRST", "SECOND", "FINAL", "OTHER"] as const;
+export type InterviewRound = (typeof INTERVIEW_ROUNDS)[number];
+
+export const INTERVIEW_ROUND_LABELS: Record<InterviewRound, string> = {
+  SCREENING_CALL: "Screening call",
+  FIRST: "First interview",
+  SECOND: "Second interview",
+  FINAL: "Final interview",
+  OTHER: "Other",
+};
+
+export const INTERVIEW_RECOMMENDATIONS = ["STRONG_YES", "YES", "MAYBE", "NO"] as const;
+export type InterviewRecommendation = (typeof INTERVIEW_RECOMMENDATIONS)[number];
+
+export const INTERVIEW_RECOMMENDATION_LABELS: Record<InterviewRecommendation, string> = {
+  STRONG_YES: "Strong yes",
+  YES: "Yes",
+  MAYBE: "Maybe",
+  NO: "No",
+};
+
+export const INTERVIEW_RECOMMENDATION_COLORS: Record<InterviewRecommendation, { bg: string; text: string }> = {
+  STRONG_YES: { bg: "bg-emerald-50", text: "text-emerald-700" },
+  YES: { bg: "bg-green-50", text: "text-green-700" },
+  MAYBE: { bg: "bg-amber-50", text: "text-amber-700" },
+  NO: { bg: "bg-red-50", text: "text-red-700" },
+};
+
+/** The scorecard every interview is marked against, each 1–5. */
+export const SCORE_CRITERIA = [
+  { key: "EXPERIENCE", label: "Relevant experience" },
+  { key: "SKILLS", label: "Technical skills" },
+  { key: "COMMUNICATION", label: "Communication" },
+  { key: "CULTURE", label: "Culture fit" },
+  { key: "POTENTIAL", label: "Potential and initiative" },
+] as const;
+export type ScoreCriterion = (typeof SCORE_CRITERIA)[number]["key"];
+
+export const OFFER_STATUSES = ["DRAFT", "SENT", "ACCEPTED", "DECLINED"] as const;
+export type OfferStatus = (typeof OFFER_STATUSES)[number];
+
+export const OFFER_STATUS_LABELS: Record<OfferStatus, string> = {
+  DRAFT: "Draft",
+  SENT: "Sent",
+  ACCEPTED: "Accepted",
+  DECLINED: "Declined",
+};
+
+export const OFFER_STATUS_COLORS: Record<OfferStatus, { bg: string; text: string }> = {
+  DRAFT: { bg: "bg-slate-100", text: "text-slate-600" },
+  SENT: { bg: "bg-blue-50", text: "text-blue-700" },
+  ACCEPTED: { bg: "bg-emerald-50", text: "text-emerald-700" },
+  DECLINED: { bg: "bg-red-50", text: "text-red-700" },
+};
+
+export const RECRUITMENT_DOC_TYPES = ["CV", "COVER_LETTER", "OFFER_LETTER", "OTHER"] as const;
+export type RecruitmentDocType = (typeof RECRUITMENT_DOC_TYPES)[number];
+
+export const RECRUITMENT_DOC_TYPE_LABELS: Record<RecruitmentDocType, string> = {
+  CV: "CV",
+  COVER_LETTER: "Cover letter",
+  OFFER_LETTER: "Offer letter",
+  OTHER: "Other documents",
+};
+
+/** Folder name each document type is filed under in Google Drive. */
+export const RECRUITMENT_DRIVE_FOLDERS: Record<RecruitmentDocType, string> = {
+  CV: "CV",
+  COVER_LETTER: "Cover Letter",
+  OFFER_LETTER: "Offer Letter",
+  OTHER: "Other Documents",
+};

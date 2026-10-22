@@ -29,7 +29,7 @@ export async function createUser(_prevState: unknown, formData: FormData) {
 
   const passwordHash = await bcrypt.hash(password, 10);
   await prisma.user.create({
-    data: { name, email, passwordHash, role, allowedSections: [...APP_SECTIONS] },
+    data: { name, email, passwordHash, role, allowedSections: APP_SECTIONS.filter((s) => s !== "RECRUITMENT") },
   });
 
   revalidatePath("/team");

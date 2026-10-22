@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { isPast, isToday, startOfDay } from "date-fns";
-import { Handshake, HardHat, CheckSquare } from "lucide-react";
+import { Briefcase, Handshake, HardHat, CheckSquare } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatNumber, APP_SECTION_LABELS, type AppSection } from "@/lib/constants";
 import { matchesRange } from "@/lib/date-ranges";
@@ -35,6 +35,13 @@ const TILES = [
     title: "Tasks",
     description: "Everything actionable across CRM and PM, in one list.",
     section: "TASKS",
+  },
+  {
+    href: "/recruitment",
+    icon: Briefcase,
+    title: "Recruitment",
+    description: "Vacancies, candidates, interviews and offers.",
+    section: "RECRUITMENT",
   },
 ] satisfies { href: string; icon: typeof Handshake; title: string; description: string; section: AppSection }[];
 
@@ -154,7 +161,11 @@ export default async function HomePage({
             <p className="mt-1.5 text-sm text-slate-500">Choose where you want to work</p>
           </div>
 
-          <div className="mb-14 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div
+            className={`mb-14 grid grid-cols-1 gap-4 ${
+              visibleTiles.length > 3 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"
+            }`}
+          >
             {visibleTiles.map(({ href, icon: Icon, title, description }) => (
               <Link
                 key={href}

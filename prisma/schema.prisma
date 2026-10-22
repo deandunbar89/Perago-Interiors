@@ -251,6 +251,9 @@ model User {
   financeOrders   ProjectOrder[]
   financePayments ProjectPayment[]
   vendorHistoryEntries VendorProjectHistory[]
+  recruitmentDocuments RecruitmentDocument[]
+  recruitmentTasksAssigned RecruitmentTask[] @relation("RecruitmentTaskAssignee")
+  recruitmentTasksCreated RecruitmentTask[] @relation("RecruitmentTaskCreator")
 }
 
 enum NotificationType {
@@ -262,6 +265,7 @@ enum NotificationType {
   AI
   REPORTS
   FINANCE
+  RECRUITMENT
   MENTION
 }
 
@@ -787,4 +791,190 @@ model ScheduleItem {
   sortOrder       Int                 @default(0)
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
+}
+
+// ───────────────────────── Recruitment ─────────────────────────
+
+enum VacancyStatus {
+  DRAFT
+  OPEN
+  ON_HOLD
+  FILLED
+  CLOSED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum CandidateStage {
+  NEW
+  SCREENING
+  INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
+}
+
+enum InterviewRound {
+  SCREENING_CALL
+  FIRST
+  SECOND
+  FINAL
+  OTHER
+}
+
+enum InterviewRecommendation {
+  STRONG_YES
+  YES
+  MAYBE
+  NO
+}
+
+enum OfferStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+}
+
+enum RecruitmentDocType {
+  CV
+  COVER_LETTER
+  OFFER_LETTER
+  OTHER
+}
+
+/// An open (or past) role the company is hiring for.
+model Vacancy {
+  id             String         @id @default(cuid())
+  title          String
+  department     String?
+  location       String?
+  employmentType EmploymentType @default(FULL_TIME)
+  headcount      Int            @default(1)
+  salaryRange    String?
+  description    String?
+  requirements   String?
+  status         VacancyStatus  @default(OPEN)
+  openedAt       DateTime       @default(now())
+  closedAt       DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  candidates Candidate[]
+  tasks      RecruitmentTask[]
+}
+
+/// One applicant for one vacancy, moving through the hiring pipeline.
+model Candidate {
+  id              String         @id @default(cuid())
+  vacancyId       String
+  vacancy         Vacancy        @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  name            String
+  email           String?
+  phone           String?
+  currentRole     String?
+  currentCompany  String?
+  location        String?
+  source          String?
+  noticePeriod    String?
+  expectedSalary  String?
+  stage           CandidateStage @default(NEW)
+  /// Quick 1–5 star gut-feel rating, set by hand. The structured score comes from interview scorecards.
+  rating          Int?
+  notes           String?
+  rejectionReason String?
+  appliedAt       DateTime       @default(now())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  documents  RecruitmentDocument[]
+  interviews Interview[]
+  offer      Offer?
+  tasks      RecruitmentTask[]
+
+  @@index([vacancyId, stage])
+}
+
+model RecruitmentDocument {
+  id           String             @id @default(cuid())
+  candidateId  String
+  candidate    Candidate          @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  type         RecruitmentDocType @default(CV)
+  originalName String
+  storedName   String
+  mimeType     String
+  size         Int
+  uploadedById String?
+  uploadedBy   User?              @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime           @default(now())
+
+  @@index([candidateId])
+}
+
+/// One interview round with a candidate: when, who, notes, and a scorecard.
+model Interview {
+  id             String                   @id @default(cuid())
+  candidateId    String
+  candidate      Candidate                @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  round          InterviewRound           @default(FIRST)
+  scheduledAt    DateTime
+  interviewer    String?
+  notes          String?
+  recommendation InterviewRecommendation?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  scores InterviewScore[]
+
+  @@index([candidateId])
+}
+
+/// A 1–5 score for one scorecard criterion (see SCORE_CRITERIA in constants) at one interview.
+model InterviewScore {
+  id          String    @id @default(cuid())
+  interviewId String
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  criterion   String
+  score       Int
+
+  @@unique([interviewId, criterion])
+}
+
+model Offer {
+  id          String      @id @default(cuid())
+  candidateId String      @unique
+  candidate   Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  status      OfferStatus @default(DRAFT)
+  salary      String?
+  startDate   DateTime?
+  sentAt      DateTime?
+  respondedAt DateTime?
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+/// A recruitment to-do, optionally tied to a vacancy and/or a candidate.
+model RecruitmentTask {
+  id          String     @id @default(cuid())
+  title       String
+  dueDate     DateTime?
+  status      TaskStatus @default(OPEN)
+  vacancyId   String?
+  vacancy     Vacancy?   @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  candidateId String?
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  assigneeId  String?
+  assignee    User?      @relation("RecruitmentTaskAssignee", fields: [assigneeId], references: [id])
+  createdById String?
+  createdBy   User?      @relation("RecruitmentTaskCreator", fields: [createdById], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([status, dueDate])
 }

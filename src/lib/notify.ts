@@ -66,3 +66,24 @@ export async function notifyMentioned(userIds: string[], payload: NotifyPayload,
     })),
   });
 }
+
+/** Tells one person about something in a section — e.g. a recruitment task assigned to them —
+ * skipping themselves and anyone who has muted that category. */
+export async function notifyUser(
+  userId: string | null | undefined,
+  section: AppSection,
+  payload: NotifyPayload,
+  actorUserId?: string
+) {
+  if (!userId || userId === actorUserId) return;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, mutedNotificationTypes: true },
+  });
+  if (!user || user.mutedNotificationTypes.includes(section)) return;
+
+  await prisma.notification.create({
+    data: { recipientId: user.id, type: section, title: payload.title, body: payload.body, link: payload.link },
+  });
+}

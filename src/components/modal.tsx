@@ -8,11 +8,13 @@ export default function Modal({
   onClose,
   title,
   children,
+  size = "md",
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  size?: "md" | "lg";
 }) {
   useEffect(() => {
     if (!open) return;
@@ -32,7 +34,7 @@ export default function Modal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl"
+        className={`max-h-[90vh] w-full overflow-y-auto rounded-xl bg-white p-5 shadow-xl ${size === "lg" ? "max-w-2xl" : "max-w-md"}`}
       >
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
