@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { FileText, Plus, Search } from "lucide-react";
+import { FileText, Plus, RotateCcw, Search } from "lucide-react";
 import Modal from "@/components/modal";
 import StarRating from "@/components/star-rating";
 import ViewSwitcher, { type ExplorerView } from "@/components/view-switcher";
@@ -15,6 +15,10 @@ import { OfferStatusBadge, ScoreChip, StageBadge } from "./parts";
 import type { CandidateRow } from "./types";
 
 type SortKey = "newest" | "score" | "rating" | "name";
+type Tab = "active" | "declined";
+
+/** Stages that make up the live pipeline; declined candidates live in their own tab. */
+const ACTIVE_STAGES = CANDIDATE_STAGES.filter((s) => s !== "REJECTED");
 
 const SORT_LABELS: Record<SortKey, string> = {
   newest: "Newest first",
@@ -54,6 +58,7 @@ export default function CandidateExplorer({
   const [stageFilter, setStageFilter] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
   const [modalOpen, setModalOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>("active");
   const [stageOverrides, setStageOverrides] = useState<Record<string, CandidateStage>>({});
   const [, startTransition] = useTransition();
 
@@ -73,9 +78,13 @@ export default function CandidateExplorer({
     [candidates, stageOverrides]
   );
 
+  const declinedCount = useMemo(() => items.filter((c) => c.stage === "REJECTED").length, [items]);
+  const activeCount = items.length - declinedCount;
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const list = items.filter((c) => {
+      if ((c.stage === "REJECTED") !== (tab === "declined")) return false;
       if (vacancyFilter && c.vacancyId !== vacancyFilter) return false;
       if (stageFilter && c.stage !== stageFilter) return false;
       if (!q) return true;
@@ -91,7 +100,7 @@ export default function CandidateExplorer({
       if (sort === "name") return a.name.localeCompare(b.name);
       return b.appliedAt.getTime() - a.appliedAt.getTime();
     });
-  }, [items, search, vacancyFilter, stageFilter, sort]);
+  }, [items, tab, search, vacancyFilter, stageFilter, sort]);
 
   function moveCandidate(candidate: CandidateRow, stage: CandidateStage) {
     if (candidate.stage === stage) return;
@@ -106,8 +115,29 @@ export default function CandidateExplorer({
     });
   }
 
+  const declined = tab === "declined";
+
   return (
     <div>
+      <div className="mb-4 inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm">
+        {(
+          [
+            ["active", "Active", activeCount],
+            ["declined", "Declined", declinedCount],
+          ] as const
+        ).map(([key, label, count]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`rounded-md px-3 py-1 font-medium transition ${
+              tab === key ? "bg-charcoal text-white" : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            {label} <span className={tab === key ? "text-white/70" : "text-slate-400"}>{count}</span>
+          </button>
+        ))}
+      </div>
+
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
@@ -133,18 +163,20 @@ export default function CandidateExplorer({
               ))}
             </select>
           )}
-          <select
-            value={stageFilter}
-            onChange={(e) => setStageFilter(e.target.value)}
-            className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
-          >
-            <option value="">All stages</option>
-            {CANDIDATE_STAGES.map((s) => (
-              <option key={s} value={s}>
-                {CANDIDATE_STAGE_LABELS[s]}
-              </option>
-            ))}
-          </select>
+          {!declined && (
+            <select
+              value={stageFilter}
+              onChange={(e) => setStageFilter(e.target.value)}
+              className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+            >
+              <option value="">All stages</option>
+              {ACTIVE_STAGES.map((s) => (
+                <option key={s} value={s}>
+                  {CANDIDATE_STAGE_LABELS[s]}
+                </option>
+              ))}
+            </select>
+          )}
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
@@ -157,7 +189,7 @@ export default function CandidateExplorer({
             ))}
           </select>
           <span className="text-xs text-slate-400">
-            {filtered.length} of {candidates.length}
+            {filtered.length} of {declined ? declinedCount : activeCount}
           </span>
         </div>
 
@@ -173,10 +205,22 @@ export default function CandidateExplorer({
         </div>
       </div>
 
-      {view === "list" && <ListView candidates={filtered} showVacancy={!fixedVacancyId} />}
-      {view === "grid" && <GridView candidates={filtered} showVacancy={!fixedVacancyId} />}
-      {view === "kanban" && (
-        <KanbanView candidates={filtered} showVacancy={!fixedVacancyId} onMove={moveCandidate} />
+      {declined ? (
+        <ListView candidates={filtered} showVacancy={!fixedVacancyId} declined onRestore={(c) => moveCandidate(c, "NEW")} />
+      ) : (
+        <>
+          {view === "list" && <ListView candidates={filtered} showVacancy={!fixedVacancyId} />}
+          {view === "grid" && <GridView candidates={filtered} showVacancy={!fixedVacancyId} />}
+          {view === "kanban" && (
+            <KanbanView
+              candidates={filtered}
+              showVacancy={!fixedVacancyId}
+              declinedCount={declinedCount}
+              onMove={moveCandidate}
+              onShowDeclined={() => setTab("declined")}
+            />
+          )}
+        </>
       )}
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add candidate" size="lg">
@@ -186,11 +230,21 @@ export default function CandidateExplorer({
   );
 }
 
-function ListView({ candidates, showVacancy }: { candidates: CandidateRow[]; showVacancy: boolean }) {
+function ListView({
+  candidates,
+  showVacancy,
+  declined = false,
+  onRestore,
+}: {
+  candidates: CandidateRow[];
+  showVacancy: boolean;
+  declined?: boolean;
+  onRestore?: (candidate: CandidateRow) => void;
+}) {
   if (candidates.length === 0) {
     return (
       <p className="rounded-xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-400 shadow-sm">
-        No candidates yet.
+        {declined ? "Nobody has been declined." : "No candidates yet."}
       </p>
     );
   }
@@ -202,11 +256,12 @@ function ListView({ candidates, showVacancy }: { candidates: CandidateRow[]; sho
           <tr className="border-b border-champagne bg-charcoal text-left text-xs font-semibold uppercase tracking-wide text-cream">
             <th className="px-4 py-2.5">Candidate</th>
             {showVacancy && <th className="px-4 py-2.5">Vacancy</th>}
-            <th className="px-4 py-2.5">Stage</th>
+            <th className="px-4 py-2.5">{declined ? "Reason" : "Stage"}</th>
             <th className="px-4 py-2.5">Rating</th>
             <th className="px-4 py-2.5">Score</th>
             <th className="px-4 py-2.5">Applied</th>
             <th className="px-4 py-2.5">CV</th>
+            {declined && <th className="px-4 py-2.5" />}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -228,10 +283,16 @@ function ListView({ candidates, showVacancy }: { candidates: CandidateRow[]; sho
                   </td>
                 )}
                 <td className="px-4 py-2.5">
-                  <div className="flex flex-wrap items-center gap-1">
-                    <StageBadge stage={c.stage} />
-                    {c.offer && c.stage === "OFFER" && <OfferStatusBadge status={c.offer.status} />}
-                  </div>
+                  {declined ? (
+                    <span className="text-slate-600">
+                      {c.rejectionReason || <span className="text-slate-300">No reason given</span>}
+                    </span>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-1">
+                      <StageBadge stage={c.stage} />
+                      {c.offer && c.stage === "OFFER" && <OfferStatusBadge status={c.offer.status} />}
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-2.5">
                   <StarRating value={c.rating} size={14} />
@@ -249,6 +310,18 @@ function ListView({ candidates, showVacancy }: { candidates: CandidateRow[]; sho
                     <span className="text-slate-300">—</span>
                   )}
                 </td>
+                {declined && (
+                  <td className="px-4 py-2.5 text-right">
+                    <button
+                      onClick={() => onRestore?.(c)}
+                      title="Move back to New"
+                      className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                    >
+                      <RotateCcw size={12} />
+                      Restore
+                    </button>
+                  </td>
+                )}
               </tr>
             );
           })}
@@ -294,18 +367,22 @@ function GridView({ candidates, showVacancy }: { candidates: CandidateRow[]; sho
 function KanbanView({
   candidates,
   showVacancy,
+  declinedCount,
   onMove,
+  onShowDeclined,
 }: {
   candidates: CandidateRow[];
   showVacancy: boolean;
+  declinedCount: number;
   onMove: (candidate: CandidateRow, stage: CandidateStage) => void;
+  onShowDeclined: () => void;
 }) {
   const [dragId, setDragId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<CandidateStage | null>(null);
 
   return (
     <div className="flex gap-3 overflow-x-auto pb-2">
-      {CANDIDATE_STAGES.map((stage) => {
+      {ACTIVE_STAGES.map((stage) => {
         const items = candidates.filter((c) => c.stage === stage);
         return (
           <div
@@ -377,6 +454,32 @@ function KanbanView({
           </div>
         );
       })}
+
+      {/* Declined candidates leave the board; drop a card here to decline, or open the tab to see them. */}
+      <div
+        onDragOver={(e) => {
+          if (!dragId) return;
+          e.preventDefault();
+          setOverStage("REJECTED");
+        }}
+        onDragLeave={() => setOverStage((s) => (s === "REJECTED" ? null : s))}
+        onDrop={(e) => {
+          e.preventDefault();
+          const dragged = candidates.find((c) => c.id === dragId);
+          if (dragged) onMove(dragged, "REJECTED");
+          setDragId(null);
+          setOverStage(null);
+        }}
+        className={`flex w-48 shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-3 text-center transition ${
+          overStage === "REJECTED" ? "border-red-300 bg-red-50" : "border-slate-300 bg-white"
+        }`}
+      >
+        <p className="text-sm font-semibold text-slate-600">Declined</p>
+        <p className="text-xs text-slate-400">Drop a card here to decline</p>
+        <button onClick={onShowDeclined} className="text-xs font-medium text-slate-600 underline hover:text-slate-900">
+          View {declinedCount} declined
+        </button>
+      </div>
     </div>
   );
 }
