@@ -30,7 +30,10 @@ export default async function DashboardPage() {
   const decided = wonProjects.length + lostProjects.length;
   const winRate = decided > 0 ? Math.round((wonProjects.length / decided) * 100) : null;
 
-  const pipelineValue = openProjects.reduce((sum, p) => sum + (p.value || 0), 0);
+  // Pipeline value counts live tenders only; on-hold projects are left out.
+  const pipelineValue = openProjects
+    .filter((p) => p.stage !== "ON_HOLD")
+    .reduce((sum, p) => sum + (p.value || 0), 0);
 
   const upcomingDeadlines = deadlines.filter((d) => deadlineGroupMatchesRange(d, "14days"));
 
