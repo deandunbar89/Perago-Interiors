@@ -39,12 +39,12 @@ export type CalendarInterview = {
 
 const INTERVIEW_MINUTES = 60;
 
-function escapeText(value: string) {
+export function escapeText(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
 }
 
 /** Content lines may not exceed 75 octets; longer ones continue on the next line after a space. */
-function fold(line: string) {
+export function fold(line: string) {
   const bytes = Buffer.from(line, "utf8");
   if (bytes.length <= 75) return line;
   const parts: string[] = [];
@@ -61,7 +61,7 @@ function fold(line: string) {
   return parts.join("\r\n ");
 }
 
-function utc(d: Date) {
+export function utc(d: Date) {
   return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
 
