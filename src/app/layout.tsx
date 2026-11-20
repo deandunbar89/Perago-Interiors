@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Libre_Baskerville } from "next/font/google";
 import AutoRefresh from "@/components/auto-refresh";
 import NotificationBell from "@/components/notification-bell";
+import VoiceAdd from "@/components/voice-add";
+import { getAccess } from "@/lib/section-access";
 import { auth } from "@/auth";
 import "./globals.css";
 
@@ -24,12 +26,14 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const session = await auth();
+  const canAddTasks = session?.user ? (await getAccess()).sections.includes("TASKS") : false;
 
   return (
     <html lang="en" className={`${libreBaskerville.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <AutoRefresh />
         {session?.user && <NotificationBell />}
+        {canAddTasks && <VoiceAdd />}
         {children}
       </body>
     </html>
