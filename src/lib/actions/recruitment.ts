@@ -358,10 +358,10 @@ export async function saveInterview(
       await tx.interviewScore.createMany({ data: scores.map((s) => ({ ...s, interviewId: interview.id })) });
     }
 
-    // Booking an interview means the candidate is at least at the interview stage.
+    // Booking an interview means the candidate is at least at the "interview booked" stage.
     await tx.candidate.updateMany({
-      where: { id: candidateId, stage: { in: ["NEW", "SCREENING"] } },
-      data: { stage: "INTERVIEW" },
+      where: { id: candidateId, stage: { in: ["NEW", "SCREENING", "INTERVIEW_SCHEDULING"] } },
+      data: { stage: "INTERVIEW_BOOKED" },
     });
   });
 
@@ -409,7 +409,7 @@ export async function saveOffer(
   // Keep the pipeline in step with the offer.
   if (status === "ACCEPTED") {
     await prisma.candidate.update({ where: { id: candidateId }, data: { stage: "HIRED", rejectionReason: null } });
-  } else if (["NEW", "SCREENING", "INTERVIEW"].includes(offer.candidate.stage)) {
+  } else if (["NEW", "SCREENING", "INTERVIEW_SCHEDULING", "INTERVIEW_BOOKED", "INTERVIEW"].includes(offer.candidate.stage)) {
     await prisma.candidate.update({ where: { id: candidateId }, data: { stage: "OFFER" } });
   }
 

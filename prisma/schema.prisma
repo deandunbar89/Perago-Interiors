@@ -825,6 +825,8 @@ enum EmploymentType {
 enum CandidateStage {
   NEW
   SCREENING
+  INTERVIEW_SCHEDULING
+  INTERVIEW_BOOKED
   INTERVIEW
   OFFER
   HIRED

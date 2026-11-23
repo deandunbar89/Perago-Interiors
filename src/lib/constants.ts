@@ -485,12 +485,23 @@ export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = {
   INTERN: "Internship",
 };
 
-export const CANDIDATE_STAGES = ["NEW", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED"] as const;
+export const CANDIDATE_STAGES = [
+  "NEW",
+  "SCREENING",
+  "INTERVIEW_SCHEDULING",
+  "INTERVIEW_BOOKED",
+  "INTERVIEW",
+  "OFFER",
+  "HIRED",
+  "REJECTED",
+] as const;
 export type CandidateStage = (typeof CANDIDATE_STAGES)[number];
 
 export const CANDIDATE_STAGE_LABELS: Record<CandidateStage, string> = {
   NEW: "New",
   SCREENING: "Screening",
+  INTERVIEW_SCHEDULING: "Interview (scheduling)",
+  INTERVIEW_BOOKED: "Interview (booked)",
   INTERVIEW: "Interview",
   OFFER: "Offer",
   HIRED: "Hired",
@@ -500,6 +511,8 @@ export const CANDIDATE_STAGE_LABELS: Record<CandidateStage, string> = {
 export const CANDIDATE_STAGE_COLORS: Record<CandidateStage, { bg: string; text: string }> = {
   NEW: { bg: "bg-slate-100", text: "text-slate-600" },
   SCREENING: { bg: "bg-blue-50", text: "text-blue-700" },
+  INTERVIEW_SCHEDULING: { bg: "bg-indigo-50", text: "text-indigo-700" },
+  INTERVIEW_BOOKED: { bg: "bg-purple-50", text: "text-purple-700" },
   INTERVIEW: { bg: "bg-violet-50", text: "text-violet-700" },
   OFFER: { bg: "bg-amber-50", text: "text-amber-700" },
   HIRED: { bg: "bg-emerald-50", text: "text-emerald-700" },
