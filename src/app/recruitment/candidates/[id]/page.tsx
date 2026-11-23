@@ -14,6 +14,7 @@ import { taskRowInclude } from "../../types";
 import CandidateHeader from "./candidate-header";
 import InterviewsSection from "./interviews-section";
 import OfferSection from "./offer-section";
+import NotesSection from "./notes-section";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function CandidatePage({
         documents: { orderBy: { createdAt: "desc" }, include: { uploadedBy: { select: { name: true } } } },
         interviews: { orderBy: { scheduledAt: "desc" }, include: { scores: true } },
         offer: true,
+        noteLog: { orderBy: { createdAt: "desc" }, include: { author: { select: { name: true } } } },
       },
     }),
     prisma.vacancy.findMany({ select: { id: true, title: true }, orderBy: { title: "asc" } }),
@@ -144,6 +146,7 @@ export default async function CandidatePage({
         </div>
 
         <div className="space-y-8 lg:col-span-2">
+          <NotesSection candidateId={candidate.id} notes={candidate.noteLog} />
           <InterviewsSection candidateId={candidate.id} interviews={candidate.interviews} />
           <OfferSection candidateId={candidate.id} offer={candidate.offer} letters={docsOfType("OFFER_LETTER")} />
           <section>

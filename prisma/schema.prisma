@@ -252,6 +252,7 @@ model User {
   financePayments ProjectPayment[]
   vendorHistoryEntries VendorProjectHistory[]
   recruitmentDocuments RecruitmentDocument[]
+  candidateNotes       CandidateNote[]       @relation("CandidateNoteAuthor")
   recruitmentTasksAssigned RecruitmentTask[] @relation("RecruitmentTaskAssignee")
   recruitmentTasksCreated RecruitmentTask[] @relation("RecruitmentTaskCreator")
 }
@@ -852,6 +853,13 @@ enum OfferStatus {
   DECLINED
 }
 
+enum CandidateNoteType {
+  CALL
+  INTERVIEW
+  STATUS
+  GENERAL
+}
+
 enum RecruitmentDocType {
   CV
   COVER_LETTER
@@ -910,8 +918,24 @@ model Candidate {
   interviews Interview[]
   offer      Offer?
   tasks      RecruitmentTask[]
+  noteLog    CandidateNote[]
 
   @@index([vacancyId, stage])
+}
+
+/// A dated entry in a candidate's notes log: calls, interview notes, status updates.
+model CandidateNote {
+  id          String            @id @default(cuid())
+  candidateId String
+  candidate   Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  type        CandidateNoteType @default(GENERAL)
+  body        String
+  authorId    String?
+  author      User?             @relation("CandidateNoteAuthor", fields: [authorId], references: [id])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([candidateId, createdAt])
 }
 
 model RecruitmentDocument {

@@ -493,3 +493,37 @@ export async function deleteRecruitmentTask(taskId: string) {
   await prisma.recruitmentTask.delete({ where: { id: taskId } });
   refresh();
 }
+
+// ───────────────────────── Candidate notes log ─────────────────────────
+
+const CANDIDATE_NOTE_TYPES = ["CALL", "INTERVIEW", "STATUS", "GENERAL"] as const;
+type CandidateNoteType = (typeof CANDIDATE_NOTE_TYPES)[number];
+
+export async function addCandidateNote(candidateId: string, formData: FormData) {
+  const userId = await requireRecruitment();
+  const body = text(formData, "body");
+  if (!body) return { error: "Write a note first" };
+  const type = pick(formData.get("type"), CANDIDATE_NOTE_TYPES, "GENERAL" as CandidateNoteType);
+
+  await prisma.candidateNote.create({ data: { candidateId, type, body, authorId: userId } });
+  refresh();
+  return { success: true };
+}
+
+export async function updateCandidateNote(noteId: string, body: string, type: string) {
+  await requireRecruitment();
+  const trimmed = body.trim();
+  if (!trimmed) return { error: "Note cannot be empty" };
+  await prisma.candidateNote.update({
+    where: { id: noteId },
+    data: { body: trimmed, type: pick(type, CANDIDATE_NOTE_TYPES, "GENERAL" as CandidateNoteType) },
+  });
+  refresh();
+  return { success: true };
+}
+
+export async function deleteCandidateNote(noteId: string) {
+  await requireRecruitment();
+  await prisma.candidateNote.delete({ where: { id: noteId } });
+  refresh();
+}
