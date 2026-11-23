@@ -7,7 +7,7 @@ import { FileText, Plus, RotateCcw, Search } from "lucide-react";
 import Modal from "@/components/modal";
 import StarRating from "@/components/star-rating";
 import ViewSwitcher, { type ExplorerView } from "@/components/view-switcher";
-import { setCandidateStage } from "@/lib/actions/recruitment";
+import { setCandidateRating, setCandidateStage, setCandidateVacancy } from "@/lib/actions/recruitment";
 import { CANDIDATE_STAGES, CANDIDATE_STAGE_LABELS, type CandidateStage } from "@/lib/constants";
 import { candidateScore } from "@/lib/recruitment-score";
 import CandidateForm from "./candidate-form";
@@ -26,6 +26,8 @@ const SORT_LABELS: Record<SortKey, string> = {
   rating: "Highest rating",
   name: "Name A–Z",
 };
+
+const NOTE_TYPE_LABELS: Record<string, string> = { CALL: "Call", INTERVIEW: "Interview", STATUS: "Status", GENERAL: "Note" };
 
 function cvHref(c: CandidateRow) {
   const cv = c.documents.find((d) => d.type === "CV");
@@ -60,6 +62,8 @@ export default function CandidateExplorer({
   const [modalOpen, setModalOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("active");
   const [stageOverrides, setStageOverrides] = useState<Record<string, CandidateStage>>({});
+  const [ratingOverrides, setRatingOverrides] = useState<Record<string, number | null>>({});
+  const [vacancyOverrides, setVacancyOverrides] = useState<Record<string, string>>({});
   const [, startTransition] = useTransition();
 
   useEffect(() => {
@@ -74,8 +78,17 @@ export default function CandidateExplorer({
   }, [view, ready, storageKey]);
 
   const items = useMemo(
-    () => candidates.map((c) => (stageOverrides[c.id] ? { ...c, stage: stageOverrides[c.id] } : c)),
-    [candidates, stageOverrides]
+    () =>
+      candidates.map((c) => {
+        let row = c;
+        if (stageOverrides[c.id]) row = { ...row, stage: stageOverrides[c.id] };
+        if (c.id in ratingOverrides) row = { ...row, rating: ratingOverrides[c.id] };
+        const vId = vacancyOverrides[c.id];
+        const v = vId ? vacancies.find((x) => x.id === vId) : undefined;
+        if (v) row = { ...row, vacancyId: v.id, vacancy: v };
+        return row;
+      }),
+    [candidates, stageOverrides, ratingOverrides, vacancyOverrides, vacancies]
   );
 
   const declinedCount = useMemo(() => items.filter((c) => c.stage === "REJECTED").length, [items]);
@@ -112,6 +125,21 @@ export default function CandidateExplorer({
     setStageOverrides((prev) => ({ ...prev, [candidate.id]: stage }));
     startTransition(() => {
       setCandidateStage(candidate.id, stage, reason);
+    });
+  }
+
+  function rateCandidate(candidate: CandidateRow, rating: number | null) {
+    setRatingOverrides((prev) => ({ ...prev, [candidate.id]: rating }));
+    startTransition(() => {
+      setCandidateRating(candidate.id, rating);
+    });
+  }
+
+  function changeVacancy(candidate: CandidateRow, vacancyId: string) {
+    if (candidate.vacancyId === vacancyId) return;
+    setVacancyOverrides((prev) => ({ ...prev, [candidate.id]: vacancyId }));
+    startTransition(() => {
+      setCandidateVacancy(candidate.id, vacancyId);
     });
   }
 
@@ -209,7 +237,16 @@ export default function CandidateExplorer({
         <ListView candidates={filtered} showVacancy={!fixedVacancyId} declined onRestore={(c) => moveCandidate(c, "NEW")} />
       ) : (
         <>
-          {view === "list" && <ListView candidates={filtered} showVacancy={!fixedVacancyId} />}
+          {view === "list" && (
+            <ListView
+              candidates={filtered}
+              showVacancy={!fixedVacancyId}
+              vacancies={vacancies}
+              onStage={moveCandidate}
+              onRating={rateCandidate}
+              onVacancy={changeVacancy}
+            />
+          )}
           {view === "grid" && <GridView candidates={filtered} showVacancy={!fixedVacancyId} />}
           {view === "kanban" && (
             <KanbanView
@@ -235,11 +272,19 @@ function ListView({
   showVacancy,
   declined = false,
   onRestore,
+  vacancies = [],
+  onStage,
+  onRating,
+  onVacancy,
 }: {
   candidates: CandidateRow[];
   showVacancy: boolean;
   declined?: boolean;
   onRestore?: (candidate: CandidateRow) => void;
+  vacancies?: { id: string; title: string }[];
+  onStage?: (candidate: CandidateRow, stage: CandidateStage) => void;
+  onRating?: (candidate: CandidateRow, rating: number | null) => void;
+  onVacancy?: (candidate: CandidateRow, vacancyId: string) => void;
 }) {
   if (candidates.length === 0) {
     return (
@@ -258,6 +303,7 @@ function ListView({
             {showVacancy && <th className="px-4 py-2.5">Vacancy</th>}
             <th className="px-4 py-2.5">{declined ? "Reason" : "Stage"}</th>
             <th className="px-4 py-2.5">Rating</th>
+            <th className="px-4 py-2.5">Latest update</th>
             <th className="px-4 py-2.5">Score</th>
             <th className="px-4 py-2.5">Applied</th>
             <th className="px-4 py-2.5">CV</th>
@@ -277,9 +323,23 @@ function ListView({
                 </td>
                 {showVacancy && (
                   <td className="px-4 py-2.5">
-                    <Link href={`/recruitment/vacancies/${c.vacancy.id}`} className="text-slate-600 hover:underline">
-                      {c.vacancy.title}
-                    </Link>
+                    {onVacancy ? (
+                      <select
+                        value={c.vacancyId}
+                        onChange={(e) => onVacancy(c, e.target.value)}
+                        className="max-w-[14rem] rounded-md border border-transparent bg-transparent px-1 py-1 text-sm text-slate-600 hover:border-slate-300 focus:border-gold focus:outline-none"
+                      >
+                        {vacancies.map((v) => (
+                          <option key={v.id} value={v.id}>
+                            {v.title}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <Link href={`/recruitment/vacancies/${c.vacancy.id}`} className="text-slate-600 hover:underline">
+                        {c.vacancy.title}
+                      </Link>
+                    )}
                   </td>
                 )}
                 <td className="px-4 py-2.5">
@@ -289,13 +349,39 @@ function ListView({
                     </span>
                   ) : (
                     <div className="flex flex-wrap items-center gap-1">
-                      <StageBadge stage={c.stage} />
+                      {onStage ? (
+                        <select
+                          value={c.stage}
+                          onChange={(e) => onStage(c, e.target.value as CandidateStage)}
+                          className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700 hover:border-slate-300 focus:border-gold focus:outline-none"
+                        >
+                          {CANDIDATE_STAGES.map((st) => (
+                            <option key={st} value={st}>
+                              {CANDIDATE_STAGE_LABELS[st]}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <StageBadge stage={c.stage} />
+                      )}
                       {c.offer && c.stage === "OFFER" && <OfferStatusBadge status={c.offer.status} />}
                     </div>
                   )}
                 </td>
                 <td className="px-4 py-2.5">
-                  <StarRating value={c.rating} size={14} />
+                  <StarRating value={c.rating} size={14} onChange={onRating ? (r) => onRating(c, r) : undefined} />
+                </td>
+                <td className="max-w-[16rem] px-4 py-2.5">
+                  {c.noteLog?.[0] ? (
+                    <Link href={`/recruitment/candidates/${c.id}`} className="block" title={c.noteLog[0].body}>
+                      <span className="text-xs text-slate-400">
+                        {NOTE_TYPE_LABELS[c.noteLog[0].type] ?? "Note"} · {format(c.noteLog[0].createdAt, "d MMM")}
+                      </span>
+                      <span className="line-clamp-2 text-xs text-slate-700">{c.noteLog[0].body}</span>
+                    </Link>
+                  ) : (
+                    <span className="text-slate-300">—</span>
+                  )}
                 </td>
                 <td className="px-4 py-2.5">
                   <ScoreChip score={candidateScore(c.interviews)} />

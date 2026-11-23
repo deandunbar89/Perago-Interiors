@@ -15,6 +15,8 @@ export type CandidateRow = Candidate & {
   interviews: { scores: Pick<InterviewScore, "score">[] }[];
   documents: Pick<RecruitmentDocument, "id" | "type">[];
   offer: Pick<Offer, "status"> | null;
+  /** The most recent entry from the notes log (or none). */
+  noteLog: { type: string; body: string; createdAt: Date }[];
 };
 
 export const candidateRowInclude = {
@@ -22,6 +24,7 @@ export const candidateRowInclude = {
   interviews: { select: { scores: { select: { score: true } } } },
   documents: { select: { id: true, type: true } },
   offer: { select: { status: true } },
+  noteLog: { orderBy: { createdAt: "desc" }, take: 1, select: { type: true, body: true, createdAt: true } },
 } as const;
 
 export type TaskRow = RecruitmentTask & {

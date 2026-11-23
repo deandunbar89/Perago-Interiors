@@ -269,6 +269,14 @@ export async function setCandidateRating(candidateId: string, rating: number | n
   refresh();
 }
 
+export async function setCandidateVacancy(candidateId: string, vacancyId: string) {
+  await requireRecruitment();
+  const vacancy = await prisma.vacancy.findUnique({ where: { id: vacancyId }, select: { id: true } });
+  if (!vacancy) return;
+  await prisma.candidate.update({ where: { id: candidateId }, data: { vacancyId } });
+  refresh();
+}
+
 export async function deleteCandidate(candidateId: string) {
   await requireRecruitment();
 
