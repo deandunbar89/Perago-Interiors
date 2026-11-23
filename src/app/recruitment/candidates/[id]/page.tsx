@@ -114,8 +114,6 @@ export default async function CandidatePage({
             {whatsapp && (
               <a
                 href={whatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="mt-3 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-3 py-2 text-sm font-medium text-white hover:bg-[#1ebe5b]"
               >
                 <MessageCircle size={16} />
