@@ -980,6 +980,8 @@ model Interview {
   interviewer    String?
   notes          String?
   recommendation InterviewRecommendation?
+  /// Id of the matching event in the Outlook calendar (see lib/outlook-calendar.ts).
+  outlookEventId String?
   createdAt      DateTime                 @default(now())
   updatedAt      DateTime                 @updatedAt
 

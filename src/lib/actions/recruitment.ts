@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { removeOutlookEvent, syncInterviewToOutlook } from "@/lib/outlook-calendar";
 import { getAccess } from "@/lib/section-access";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/storage";
 import { mirrorToDrive } from "@/lib/google-drive";
@@ -281,8 +282,10 @@ export async function deleteCandidate(candidateId: string) {
   await requireRecruitment();
 
   const docs = await prisma.recruitmentDocument.findMany({ where: { candidateId }, select: { storedName: true } });
+  const interviews = await prisma.interview.findMany({ where: { candidateId }, select: { outlookEventId: true } });
   await prisma.candidate.delete({ where: { id: candidateId } });
   await Promise.all(docs.map((d) => deleteUploadedFile(UPLOAD_FOLDER, d.storedName)));
+  await Promise.all(interviews.map((iv) => removeOutlookEvent(iv.outlookEventId)));
   refresh();
 }
 
@@ -348,10 +351,12 @@ export async function saveInterview(
     return n >= 1 && n <= 5 ? [{ criterion: key, score: n }] : [];
   });
 
+  let savedId = interviewId;
   await prisma.$transaction(async (tx) => {
     const interview = interviewId
       ? await tx.interview.update({ where: { id: interviewId }, data })
       : await tx.interview.create({ data: { ...data, candidateId } });
+    savedId = interview.id;
 
     await tx.interviewScore.deleteMany({ where: { interviewId: interview.id } });
     if (scores.length > 0) {
@@ -365,13 +370,15 @@ export async function saveInterview(
     });
   });
 
+  if (savedId) await syncInterviewToOutlook(savedId);
   refresh();
   return { success: true };
 }
 
 export async function deleteInterview(interviewId: string) {
   await requireRecruitment();
-  await prisma.interview.delete({ where: { id: interviewId } });
+  const interview = await prisma.interview.delete({ where: { id: interviewId } });
+  await removeOutlookEvent(interview.outlookEventId);
   refresh();
 }
 
