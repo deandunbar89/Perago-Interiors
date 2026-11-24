@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getRecruitmentTeam } from "@/lib/recruitment-team";
 import { candidateScore } from "@/lib/recruitment-score";
 import { EMIRATE_LABELS } from "@/lib/constants";
-import { whatsappLink } from "@/lib/whatsapp";
+import { whatsappNumber } from "@/lib/whatsapp";
+import WhatsAppButton from "@/components/whatsapp-button";
 import DocCard from "../../doc-card";
 import RecruitmentTasksPanel from "../../tasks-panel";
 import { taskRowInclude } from "../../types";
@@ -49,7 +50,7 @@ export default async function CandidatePage({
   ]);
   if (!candidate) notFound();
 
-  const whatsapp = whatsappLink(candidate.phone);
+  const whatsapp = whatsappNumber(candidate.phone);
   const docsOfType = (type: string) => candidate.documents.filter((d) => d.type === type);
 
   const details = [
@@ -113,15 +114,7 @@ export default async function CandidatePage({
                 </div>
               ))}
             </dl>
-            {whatsapp && (
-              <a
-                href={whatsapp}
-                className="mt-3 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-3 py-2 text-sm font-medium text-white hover:bg-[#1ebe5b]"
-              >
-                <MessageCircle size={16} />
-                WhatsApp {candidate.name.split(" ")[0]}
-              </a>
-            )}
+            {whatsapp && <WhatsAppButton number={whatsapp} name={candidate.name.split(" ")[0]} />}
             {candidate.stage === "REJECTED" && candidate.rejectionReason && (
               <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
                 Rejected: {candidate.rejectionReason}
