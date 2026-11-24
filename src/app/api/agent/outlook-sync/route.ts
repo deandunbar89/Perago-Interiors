@@ -11,7 +11,8 @@ export async function POST(req: Request) {
   const actor = await requireAgent(req);
   if (isResponse(actor)) return actor;
   if (!outlookCalendarConfigured()) {
-    return NextResponse.json({ error: "Outlook is not connected (MS_TENANT_ID / MS_CLIENT_ID / MS_CLIENT_SECRET / MAIL_FROM)" }, { status: 400 });
+    const missing = ["MS_TENANT_ID", "MS_CLIENT_ID", "MS_CLIENT_SECRET", "MAIL_FROM"].filter((k) => !process.env[k]);
+    return NextResponse.json({ error: "Outlook is not connected", missing }, { status: 400 });
   }
 
   const interviews = await prisma.interview.findMany({
