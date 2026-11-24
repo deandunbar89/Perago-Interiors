@@ -71,3 +71,14 @@ export async function deleteUser(userId: string) {
   await prisma.user.delete({ where: { id: userId } });
   revalidatePath("/team");
 }
+
+/** Admin sets a new (temporary) password for another team member. */
+export async function adminResetPassword(userId: string, newPassword: string) {
+  await requireAdmin();
+  if (!newPassword || newPassword.length < 8) return { error: "Password must be at least 8 characters" };
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!user) return { error: "User not found" };
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  return { success: true };
+}

@@ -2,8 +2,9 @@
 
 import { useRef, useState, useTransition } from "react";
 import type { User } from "@prisma/client";
-import { Plus, Trash2, UserCircle } from "lucide-react";
-import { createUser, deleteUser } from "@/lib/actions/users";
+import { Eye, EyeOff, KeyRound, Plus, Trash2, UserCircle } from "lucide-react";
+import Modal from "@/components/modal";
+import { adminResetPassword, createUser, deleteUser } from "@/lib/actions/users";
 
 export default function TeamPanel({
   users,
@@ -18,6 +19,32 @@ export default function TeamPanel({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
+  const [resetFor, setResetFor] = useState<{ id: string; name: string } | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetDone, setResetDone] = useState<string | null>(null);
+
+  function openReset(u: { id: string; name: string }) {
+    setResetFor(u);
+    setNewPassword("");
+    setShowPassword(false);
+    setResetError(null);
+  }
+
+  function saveReset() {
+    if (!resetFor) return;
+    const target = resetFor;
+    setResetError(null);
+    startTransition(async () => {
+      const result = await adminResetPassword(target.id, newPassword);
+      if (result?.error) setResetError(result.error);
+      else {
+        setResetFor(null);
+        setResetDone(`${target.name}'s password has been changed. Let them know the new one.`);
+      }
+    });
+  }
 
   function handleDelete(userId: string) {
     if (!confirm("Remove this team member? They will lose access immediately.")) return;
@@ -40,6 +67,49 @@ export default function TeamPanel({
 
   return (
     <div className="max-w-2xl space-y-6">
+      {resetDone && (
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{resetDone}</p>
+      )}
+      <Modal open={resetFor !== null} onClose={() => setResetFor(null)} title={resetFor ? `Reset password — ${resetFor.name}` : "Reset password"}>
+        <div className="space-y-3">
+          <p className="text-sm text-slate-600">Set a new password and give it to them. They can change it later under Account.</p>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              autoComplete="new-password"
+              autoFocus
+              placeholder="At least 8 characters"
+              className="w-full rounded-lg border border-slate-300 py-2 pl-3 pr-10 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-700"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+          {resetError && <p className="text-sm text-red-600">{resetError}</p>}
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setResetFor(null)}
+              className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={saveReset}
+              disabled={pending}
+              className="rounded-lg bg-charcoal px-4 py-1.5 text-sm font-medium text-white transition hover:bg-gold hover:text-charcoal disabled:opacity-60"
+            >
+              Save password
+            </button>
+          </div>
+        </div>
+      </Modal>
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <ul className="divide-y divide-slate-100">
           {users.map((u) => (
@@ -59,6 +129,16 @@ export default function TeamPanel({
                 <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
                   {u.role === "ADMIN" ? "Admin" : "Member"}
                 </span>
+                {isAdmin && u.id !== currentUserId && (
+                  <button
+                    onClick={() => openReset(u)}
+                    title="Reset password"
+                    aria-label={`Reset ${u.name}'s password`}
+                    className="text-slate-400 transition hover:text-slate-900"
+                  >
+                    <KeyRound size={15} />
+                  </button>
+                )}
                 {isAdmin && u.id !== currentUserId && (
                   <button
                     onClick={() => handleDelete(u.id)}
