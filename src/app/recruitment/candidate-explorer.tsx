@@ -5,6 +5,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { FileText, Plus, RotateCcw, Search, Trash2 } from "lucide-react";
 import Modal from "@/components/modal";
+import MultiSelect from "@/components/multi-select";
 import StarRating from "@/components/star-rating";
 import ViewSwitcher, { type ExplorerView } from "@/components/view-switcher";
 import { deleteCandidate, setCandidateRating, setCandidateStage, setCandidateVacancy } from "@/lib/actions/recruitment";
@@ -63,7 +64,7 @@ export default function CandidateExplorer({
   const [ready, setReady] = useState(false);
   const [search, setSearch] = useState("");
   const [vacancyFilter, setVacancyFilter] = useState("");
-  const [stageFilter, setStageFilter] = useState("");
+  const [stageFilter, setStageFilter] = useState<string[]>([]);
   const [sort, setSort] = useState<SortKey>("newest");
   const [modalOpen, setModalOpen] = useState(false);
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -108,7 +109,7 @@ export default function CandidateExplorer({
     const list = live.filter((c) => {
       if (tabOf(c.stage) !== tab) return false;
       if (vacancyFilter && c.vacancyId !== vacancyFilter) return false;
-      if (stageFilter && c.stage !== stageFilter) return false;
+      if (stageFilter.length && !stageFilter.includes(c.stage)) return false;
       if (!q) return true;
       return [c.name, c.email, c.phone, c.currentRole, c.currentCompany, c.vacancy.title]
         .filter(Boolean)
@@ -211,18 +212,13 @@ export default function CandidateExplorer({
             </select>
           )}
           {tab === "active" && (
-            <select
-              value={stageFilter}
-              onChange={(e) => setStageFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold"
-            >
-              <option value="">All stages</option>
-              {ACTIVE_STAGES.map((s) => (
-                <option key={s} value={s}>
-                  {CANDIDATE_STAGE_LABELS[s]}
-                </option>
-              ))}
-            </select>
+            <MultiSelect
+              options={ACTIVE_STAGES.map((st) => ({ value: st, label: CANDIDATE_STAGE_LABELS[st] }))}
+              selected={stageFilter}
+              onChange={setStageFilter}
+              allLabel="All stages"
+              noun="stages"
+            />
           )}
           <select
             value={sort}
