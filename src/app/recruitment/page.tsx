@@ -13,7 +13,9 @@ export default async function RecruitmentPage() {
       orderBy: [{ openedAt: "desc" }],
       include: { candidates: { select: { stage: true } } },
     }),
-    prisma.interview.count({ where: { scheduledAt: { gte: now, lte: addDays(now, 7) } } }),
+    prisma.interview.count({
+      where: { scheduledAt: { gte: now, lte: addDays(now, 7) }, candidate: { stage: { notIn: ["REJECTED", "ARCHIVED"] } } },
+    }),
     prisma.offer.count({ where: { status: "SENT" } }),
     prisma.candidate.count({ where: { stage: "ARCHIVED" } }),
   ]);
