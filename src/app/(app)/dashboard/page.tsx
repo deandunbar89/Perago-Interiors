@@ -6,6 +6,8 @@ import { getTaskViewer, taskVisibility } from "@/lib/task-access";
 import { deadlineGroupMatchesRange } from "../deadlines/filter-deadlines";
 import PipelineBoard from "./pipeline-board";
 import StatCard from "./stat-card";
+import { issuedQuotesForTenders } from "@/lib/quotes";
+import IssuedQuotesList from "@/components/issued-quotes-list";
 
 export default async function DashboardPage() {
   const viewer = await getTaskViewer();
@@ -37,6 +39,12 @@ export default async function DashboardPage() {
 
   const upcomingDeadlines = deadlines.filter((d) => deadlineGroupMatchesRange(d, "14days"));
 
+  const liveTenders = openProjects.filter((p) => p.stage !== "ON_HOLD");
+  const issuedQuotes = await issuedQuotesForTenders(liveTenders.map((p) => p.id));
+  const quoteRows = liveTenders
+    .map((p) => ({ id: p.id, title: p.title, href: `/projects/${p.id}`, quote: issuedQuotes.get(p.id) ?? null }))
+    .sort((a, b) => (b.quote?.issuedAt?.getTime() ?? 0) - (a.quote?.issuedAt?.getTime() ?? 0));
+
   return (
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
@@ -64,6 +72,13 @@ export default async function DashboardPage() {
           accent={upcomingDeadlines.length > 0 ? "warn" : undefined}
           href="/deadlines?range=14days"
         />
+      </div>
+
+      <div className="mb-8">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Issued quotes — live tenders ({issuedQuotes.size} of {liveTenders.length} issued)
+        </h2>
+        <IssuedQuotesList rows={quoteRows} emptyText="No live tenders." />
       </div>
 
       <PipelineBoard projects={projects} />

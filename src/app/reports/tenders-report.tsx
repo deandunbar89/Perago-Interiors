@@ -3,12 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { formatNumber, STAGE_LABELS, type Stage } from "@/lib/constants";
 import type { PeriodRange } from "@/lib/report-periods";
 import StatCard from "@/app/(app)/dashboard/stat-card";
+import { issuedQuotesForTenders } from "@/lib/quotes";
+import IssuedQuotesList from "@/components/issued-quotes-list";
 
 const OPEN_STAGES: Stage[] = ["LEAD", "REVIEWING", "TENDER_SUBMITTED", "ON_HOLD"];
 
 export default async function TendersReport({ range }: { range: PeriodRange }) {
   const [openTenders, newTenders, stageActivity] = await Promise.all([
-    prisma.project.findMany({ where: { stage: { in: OPEN_STAGES } }, select: { value: true } }),
+    prisma.project.findMany({ where: { stage: { in: OPEN_STAGES } }, select: { id: true, title: true, value: true }, orderBy: { title: "asc" } }),
     prisma.project.count({ where: { createdAt: { gte: range.start, lte: range.end } } }),
     prisma.activity.findMany({
       where: { type: "STAGE_CHANGE", createdAt: { gte: range.start, lte: range.end } },
@@ -18,6 +20,12 @@ export default async function TendersReport({ range }: { range: PeriodRange }) {
   ]);
 
   const pipelineValue = openTenders.reduce((sum, p) => sum + (p.value || 0), 0);
+
+  const issuedQuotes = await issuedQuotesForTenders(openTenders.map((p) => p.id));
+  const quoteRows = openTenders.map((p) => ({ id: p.id, title: p.title, href: `/projects/${p.id}`, quote: issuedQuotes.get(p.id) ?? null }));
+  const issuedThisPeriod = [...issuedQuotes.values()].filter(
+    (q) => q.issuedAt && q.issuedAt >= range.start && q.issuedAt <= range.end
+  ).length;
 
   const won = stageActivity.filter((a) => a.message === `Stage changed to ${STAGE_LABELS.WON}`);
   const lost = stageActivity.filter((a) => a.message === `Stage changed to ${STAGE_LABELS.LOST}`);
@@ -36,6 +44,13 @@ export default async function TendersReport({ range }: { range: PeriodRange }) {
           <StatCard label="New This Period" value={String(newTenders)} />
           <StatCard label="Won This Period" value={String(won.length)} currency={formatNumber(wonValue) + " AED"} />
         </div>
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Issued quotes — open tenders ({issuedQuotes.size} issued, {issuedThisPeriod} in {range.label})
+        </h2>
+        <IssuedQuotesList rows={quoteRows} emptyText="No open tenders." />
       </div>
 
       <div>

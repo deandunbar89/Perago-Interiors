@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { createCommercialSection } from "@/lib/actions/crm-commercial";
 import CommercialSectionCard from "./commercial-section-card";
 import type { ProjectDetail } from "./types";
+import { IssuedQuoteCard } from "@/components/quote-status";
 
 export default function CommercialTab({ project }: { project: ProjectDetail }) {
   const [open, setOpen] = useState(false);
@@ -30,6 +31,17 @@ export default function CommercialTab({ project }: { project: ProjectDetail }) {
         Pricing documents for this tender — quotations, BOQs, comparisons and supplier quotes. Everything uploaded here
         also backs up to Google Drive.
       </p>
+
+      {(() => {
+        const docs = project.commercialSections.flatMap((s) => s.documents);
+        const issued = docs.find((d) => d.quoteStatus === "ISSUED");
+        return (
+          <IssuedQuoteCard
+            quote={issued ? { name: issued.originalName, issuedAt: issued.issuedAt, issuedValue: issued.issuedValue, href: `/api/files/${issued.id}` } : null}
+            supersededCount={docs.filter((d) => d.quoteStatus === "SUPERSEDED").length}
+          />
+        );
+      })()}
 
       {project.commercialSections.length === 0 && (
         <p className="py-8 text-center text-sm text-slate-400">No sections yet — add one below.</p>

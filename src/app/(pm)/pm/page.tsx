@@ -6,6 +6,8 @@ import { getTaskViewer, taskVisibility } from "@/lib/task-access";
 import StatCard from "@/app/(app)/dashboard/stat-card";
 import { deadlineGroupMatchesRange } from "./deadlines/filter-deadlines";
 import PmProjectCard from "./pm-project-card";
+import { issuedQuotesForPmProjects, issuedQuotesForTenders } from "@/lib/quotes";
+import IssuedQuotesList from "@/components/issued-quotes-list";
 
 const RECENT_COUNT = 6;
 
@@ -33,6 +35,23 @@ export default async function PmDashboardPage() {
   ]);
 
   const upcomingDeadlines = deadlines.filter((d) => deadlineGroupMatchesRange(d, "14days"));
+
+  // Issued quote per active project: one marked on the project itself, otherwise the one issued at tender stage.
+  const activeProjects = await prisma.pmProject.findMany({
+    where: { status: "ACTIVE" },
+    select: { id: true, title: true, linkedTenderId: true },
+    orderBy: { title: "asc" },
+  });
+  const [pmQuotes, tenderQuotes] = await Promise.all([
+    issuedQuotesForPmProjects(activeProjects.map((p) => p.id)),
+    issuedQuotesForTenders(activeProjects.map((p) => p.linkedTenderId).filter((id): id is string => !!id)),
+  ]);
+  const quoteRows = activeProjects.map((p) => ({
+    id: p.id,
+    title: p.title,
+    href: `/pm/projects/${p.id}`,
+    quote: pmQuotes.get(p.id) ?? (p.linkedTenderId ? tenderQuotes.get(p.linkedTenderId) ?? null : null),
+  }));
 
   return (
     <div className="p-8">
@@ -65,6 +84,11 @@ export default async function PmDashboardPage() {
           accent={upcomingDeadlines.length > 0 ? "warn" : undefined}
           href="/pm/deadlines?range=14days"
         />
+      </div>
+
+      <div className="mb-8">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Issued quotes — active projects</h2>
+        <IssuedQuotesList rows={quoteRows} emptyText="No active projects." />
       </div>
 
       <div className="mb-4 flex items-center justify-between">

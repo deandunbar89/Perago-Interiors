@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { addDays, dateOnly, dubaiToday, isResponse, requireAgent } from "@/lib/agent-auth";
 import { appOrigin } from "@/lib/recruitment-calendar";
+import { issuedQuotesForPmProjects, issuedQuotesForTenders, type IssuedQuote } from "@/lib/quotes";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +74,7 @@ export async function GET(req: Request) {
         startDate: true,
         targetEndDate: true,
         client: { select: { name: true } },
+        linkedTenderId: true,
         scheduleItems: { select: { title: true, percentComplete: true, status: true, endDate: true } },
         snags: { where: { status: "OPEN" }, select: { priority: true } },
       },
@@ -108,6 +110,13 @@ export async function GET(req: Request) {
     a.due.localeCompare(b.due)
   );
 
+  const [tenderQuotes, pmQuotes] = await Promise.all([
+    issuedQuotesForTenders([...tenders.map((t) => t.id), ...pmProjects.map((p) => p.linkedTenderId).filter((id): id is string => !!id)]),
+    issuedQuotesForPmProjects(pmProjects.map((p) => p.id)),
+  ]);
+  const quoteOut = (q: IssuedQuote | null | undefined) =>
+    q ? { file: q.name, issuedAt: dateOnly(q.issuedAt), valueExclVat: q.issuedValue, link: `${origin}${q.href}` } : null;
+
   return NextResponse.json({
     actingAs: actor.name,
     today,
@@ -125,6 +134,7 @@ export async function GET(req: Request) {
       currency: t.currency,
       submissionDeadline: dateOnly(t.submissionDeadline),
       siteVisitDate: dateOnly(t.siteVisitDate),
+      issuedQuote: quoteOut(tenderQuotes.get(t.id)),
       link: `${origin}/projects/${t.id}`,
     })),
     projects: pmProjects.map((p) => {
@@ -148,6 +158,7 @@ export async function GET(req: Request) {
           .map((s) => ({ title: s.title, endDate: dateOnly(s.endDate), percentComplete: s.percentComplete })),
         openSnags: p.snags.length,
         openHighPrioritySnags: p.snags.filter((s) => s.priority === "HIGH").length,
+        issuedQuote: quoteOut(pmQuotes.get(p.id) ?? (p.linkedTenderId ? tenderQuotes.get(p.linkedTenderId) : null)),
         link: `${origin}/pm/projects/${p.id}`,
       };
     }),

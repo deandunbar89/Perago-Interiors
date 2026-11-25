@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { formatNumber } from "@/lib/constants";
 import type { PeriodRange } from "@/lib/report-periods";
 import StatCard from "@/app/(app)/dashboard/stat-card";
+import { issuedQuotesForPmProjects, issuedQuotesForTenders } from "@/lib/quotes";
+import IssuedQuotesList from "@/components/issued-quotes-list";
 
 const SCHEDULE_STATUS_LABELS: Record<string, string> = {
   NOT_STARTED: "Not Started",
@@ -12,7 +14,7 @@ const SCHEDULE_STATUS_LABELS: Record<string, string> = {
 
 export default async function ProjectsReport({ range }: { range: PeriodRange }) {
   const [allProjects, newProjects, scheduleItems, completedTasks] = await Promise.all([
-    prisma.pmProject.findMany({ select: { status: true, value: true } }),
+    prisma.pmProject.findMany({ select: { id: true, title: true, linkedTenderId: true, status: true, value: true }, orderBy: { title: "asc" } }),
     prisma.pmProject.count({ where: { createdAt: { gte: range.start, lte: range.end } } }),
     prisma.scheduleItem.findMany({
       where: { endDate: { gte: range.start, lte: range.end } },
@@ -28,6 +30,17 @@ export default async function ProjectsReport({ range }: { range: PeriodRange }) 
   const onHold = allProjects.filter((p) => p.status === "ON_HOLD");
   const activeValue = active.reduce((sum, p) => sum + (p.value || 0), 0);
 
+  const [pmQuotes, tenderQuotes] = await Promise.all([
+    issuedQuotesForPmProjects(active.map((p) => p.id)),
+    issuedQuotesForTenders(active.map((p) => p.linkedTenderId).filter((id): id is string => !!id)),
+  ]);
+  const quoteRows = active.map((p) => ({
+    id: p.id,
+    title: p.title,
+    href: `/pm/projects/${p.id}`,
+    quote: pmQuotes.get(p.id) ?? (p.linkedTenderId ? tenderQuotes.get(p.linkedTenderId) ?? null : null),
+  }));
+
   return (
     <div className="space-y-8">
       <div>
@@ -40,6 +53,11 @@ export default async function ProjectsReport({ range }: { range: PeriodRange }) 
           <StatCard label="On Hold" value={String(onHold.length)} accent={onHold.length > 0 ? "warn" : undefined} />
           <StatCard label="New This Period" value={String(newProjects)} />
         </div>
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Issued quotes — active projects</h2>
+        <IssuedQuotesList rows={quoteRows} emptyText="No active projects." />
       </div>
 
       <div>

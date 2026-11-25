@@ -79,6 +79,12 @@ enum UploadMode {
   MULTIPLE
 }
 
+/// Marks a quotation file as the one issued to the client; older issued ones become superseded.
+enum QuoteStatus {
+  ISSUED
+  SUPERSEDED
+}
+
 enum SnagStatus {
   OPEN
   CLOSED
@@ -390,6 +396,9 @@ model Document {
   uploadedById String?
   uploadedBy   User?       @relation(fields: [uploadedById], references: [id])
   createdAt    DateTime    @default(now())
+  quoteStatus  QuoteStatus?
+  issuedAt     DateTime?
+  issuedValue  Float?
 }
 
 /// A named upload section on a CRM project's Commercial tab (Quotation, BOQ, Cost Comparison…).
@@ -590,6 +599,9 @@ model PmDocument {
   uploadedById      String?
   uploadedBy        User?            @relation(fields: [uploadedById], references: [id])
   createdAt         DateTime         @default(now())
+  quoteStatus       QuoteStatus?
+  issuedAt          DateTime?
+  issuedValue       Float?
 
   snagOpenFor   Snag? @relation("SnagOpenPhoto")
   snagClosedFor Snag? @relation("SnagClosedPhoto")

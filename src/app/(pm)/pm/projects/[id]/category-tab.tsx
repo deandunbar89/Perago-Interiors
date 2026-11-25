@@ -6,6 +6,7 @@ import type { PmDocCategory } from "@/lib/constants";
 import { createSubsection } from "@/lib/actions/pm-subsections";
 import type { PmProjectDetail } from "./types";
 import SubsectionCard from "./subsection-card";
+import { IssuedQuoteCard } from "@/components/quote-status";
 
 export default function CategoryTab({
   project,
@@ -37,6 +38,17 @@ export default function CategoryTab({
 
   return (
     <div className="space-y-4">
+      {category === "COMMERCIAL" &&
+        (() => {
+          const issued = project.pmDocuments.find((d) => d.quoteStatus === "ISSUED");
+          return (
+            <IssuedQuoteCard
+              quote={issued ? { name: issued.originalName, issuedAt: issued.issuedAt, issuedValue: issued.issuedValue, href: `/api/pm-files/${issued.id}` } : null}
+              supersededCount={project.pmDocuments.filter((d) => d.quoteStatus === "SUPERSEDED").length}
+            />
+          );
+        })()}
+
       {subsections.length === 0 && (
         <p className="py-8 text-center text-sm text-slate-400">No sections yet — add one below.</p>
       )}

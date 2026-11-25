@@ -5,6 +5,7 @@ import { badRequest, isResponse, requireAgent } from "@/lib/agent-auth";
 import { resolveTarget } from "@/lib/agent-targets";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/storage";
 import { mirrorToDrive } from "@/lib/google-drive";
+import { issueCrmQuote, issuePmQuote } from "@/lib/quotes";
 import {
   DOC_CATEGORIES,
   DOC_CATEGORY_LABELS,
@@ -40,7 +41,12 @@ export async function GET(req: Request) {
       orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
       select: { category: true, alsoInCategory: true, name: true, mode: true, _count: { select: { documents: true } } },
     });
+    const issuedPm = await prisma.pmDocument.findFirst({
+      where: { pmProjectId: target.pmProjectId, quoteStatus: "ISSUED" },
+      select: { id: true, originalName: true, issuedAt: true, issuedValue: true },
+    });
     return NextResponse.json({
+      issuedQuote: issuedPm,
       categories: PM_CATEGORIES,
       sections: subsections.map((s) => ({
         category: s.category,
@@ -57,7 +63,21 @@ export async function GET(req: Request) {
     orderBy: { sortOrder: "asc" },
     select: { name: true, mode: true, _count: { select: { documents: true } } },
   });
+  const commercialFiles = await prisma.document.findMany({
+    where: { projectId: target.projectId!, NOT: { commercialSectionId: null } },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, originalName: true, quoteStatus: true, issuedAt: true, issuedValue: true, commercialSection: { select: { name: true } } },
+  });
   return NextResponse.json({
+    issuedQuote: commercialFiles.find((f) => f.quoteStatus === "ISSUED") ?? null,
+    commercialFiles: commercialFiles.map((f) => ({
+      id: f.id,
+      section: f.commercialSection?.name ?? null,
+      name: f.originalName,
+      quoteStatus: f.quoteStatus,
+      issuedAt: f.issuedAt,
+      issuedValue: f.issuedValue,
+    })),
     commercialSections: sections.map((s) => ({ section: s.name, mode: s.mode, files: s._count.documents })),
     documentCategories: CRM_CATEGORIES,
   });
@@ -72,6 +92,8 @@ export async function GET(req: Request) {
  *             CRM: COMMERCIAL (with section) or a Documents tab category (DRAWING, TENDER_DOC, CONTRACT, CORRESPONDENCE, OTHER)
  *   section   section name (required for PM and for CRM Commercial), e.g. "Quotation"
  *   replace   "true" to replace the file in a single-file section; without it such a section is never overwritten
+ *   issued    "true" to mark this file as the quote issued to the client (earlier issued quote → superseded)
+ *   issuedValue  optional quote value in AED excl. VAT;  issuedDate  optional YYYY-MM-DD (default today)
  */
 export async function POST(req: Request) {
   const actor = await requireAgent(req);
@@ -94,6 +116,11 @@ export async function POST(req: Request) {
   const category = String(form.get("category") ?? "").trim().toUpperCase().replace(/[\s-]+/g, "_");
   const sectionName = String(form.get("section") ?? "").trim();
   const replace = String(form.get("replace") ?? "").toLowerCase() === "true";
+  const issued = String(form.get("issued") ?? "").toLowerCase() === "true";
+  const issuedValueRaw = Number(String(form.get("issuedValue") ?? "").replace(/[^0-9.]/g, ""));
+  const issuedValue = Number.isFinite(issuedValueRaw) && issuedValueRaw > 0 ? issuedValueRaw : null;
+  const issuedDateRaw = String(form.get("issuedDate") ?? "").trim();
+  const issuedAt = issuedDateRaw && !Number.isNaN(new Date(issuedDateRaw).getTime()) ? new Date(issuedDateRaw) : undefined;
   const mimeType = file.type || "application/octet-stream";
 
   // ── PM project: Design / Commercial / Operations … → named section ──
@@ -148,9 +175,10 @@ export async function POST(req: Request) {
       );
     }
 
+    if (issued) await issuePmQuote(pmProjectId, doc.id, { value: issuedValue, at: issuedAt });
     revalidatePath(`/pm/projects/${pmProjectId}`);
     return NextResponse.json(
-      { id: doc.id, filedIn: `${PM_DOC_CATEGORY_LABELS[subsection.category as PmDocCategory]} › ${subsection.name}`, name: file.name },
+      { id: doc.id, filedIn: `${PM_DOC_CATEGORY_LABELS[subsection.category as PmDocCategory]} › ${subsection.name}`, name: file.name, issued },
       { status: 201 }
     );
   }
@@ -189,8 +217,9 @@ export async function POST(req: Request) {
       data: { projectId, userId: actor.userId, type: "DOCUMENT", message: `Uploaded ${file.name} to Commercial — ${section.name}` },
     });
 
+    if (issued) await issueCrmQuote(projectId, doc.id, { value: issuedValue, at: issuedAt, userId: actor.userId });
     revalidatePath(`/projects/${projectId}`);
-    return NextResponse.json({ id: doc.id, filedIn: `Commercial › ${section.name}`, name: file.name }, { status: 201 });
+    return NextResponse.json({ id: doc.id, filedIn: `Commercial › ${section.name}`, name: file.name, issued }, { status: 201 });
   }
 
   const docCategory = (category || "OTHER") as DocCategory;

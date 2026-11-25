@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import type { PmDocSubsection, PmDocument, User } from "@prisma/client";
 import { uploadPmDocument, deletePmDocument } from "@/lib/actions/pm-documents";
 import { deleteSubsection } from "@/lib/actions/pm-subsections";
+import { QuoteBadge, QuoteIssueButton } from "@/components/quote-status";
 
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -202,14 +203,18 @@ export default function SubsectionCard({
                 <div className="flex min-w-0 items-center gap-2.5">
                   <FileText size={16} className="shrink-0 text-slate-400" />
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-medium text-slate-800">{doc.originalName}</p>
+                    <p className={`truncate text-xs font-medium ${doc.quoteStatus === "SUPERSEDED" ? "text-slate-400 line-through" : "text-slate-800"}`}>{doc.originalName}</p>
                     <p className="text-[11px] text-slate-400">
                       {formatSize(doc.size)} · {doc.uploadedBy?.name || "Unknown"} ·{" "}
                       {format(doc.createdAt, "MMM d, yyyy")}
                     </p>
+                    <QuoteBadge doc={doc} />
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  {(subsection.category === "COMMERCIAL" || subsection.alsoInCategory === "COMMERCIAL") && (
+                    <QuoteIssueButton kind="pm" parentId={pmProjectId} doc={doc} />
+                  )}
                   <a
                     href={`/api/pm-files/${doc.id}`}
                     target="_blank"
