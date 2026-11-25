@@ -494,6 +494,7 @@ export const CANDIDATE_STAGES = [
   "OFFER",
   "HIRED",
   "REJECTED",
+  "ARCHIVED",
 ] as const;
 export type CandidateStage = (typeof CANDIDATE_STAGES)[number];
 
@@ -506,6 +507,7 @@ export const CANDIDATE_STAGE_LABELS: Record<CandidateStage, string> = {
   OFFER: "Offer",
   HIRED: "Hired",
   REJECTED: "Rejected",
+  ARCHIVED: "Archived",
 };
 
 export const CANDIDATE_STAGE_COLORS: Record<CandidateStage, { bg: string; text: string }> = {
@@ -517,6 +519,7 @@ export const CANDIDATE_STAGE_COLORS: Record<CandidateStage, { bg: string; text: 
   OFFER: { bg: "bg-amber-50", text: "text-amber-700" },
   HIRED: { bg: "bg-emerald-50", text: "text-emerald-700" },
   REJECTED: { bg: "bg-red-50", text: "text-red-700" },
+  ARCHIVED: { bg: "bg-stone-200", text: "text-stone-600" },
 };
 
 export const INTERVIEW_ROUNDS = ["SCREENING_CALL", "FIRST", "SECOND", "FINAL", "OTHER"] as const;

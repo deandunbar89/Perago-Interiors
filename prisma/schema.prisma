@@ -845,6 +845,7 @@ enum CandidateStage {
   OFFER
   HIRED
   REJECTED
+  ARCHIVED
 }
 
 enum InterviewRound {

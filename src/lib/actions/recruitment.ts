@@ -258,7 +258,11 @@ export async function setCandidateStage(candidateId: string, stage: CandidateSta
 
   await prisma.candidate.update({
     where: { id: candidateId },
-    data: { stage, rejectionReason: stage === "REJECTED" ? (rejectionReason?.trim() || null) : null },
+    data: {
+      stage,
+      // Archiving keeps any rejection reason on file; moving back into the pipeline clears it.
+      rejectionReason: stage === "REJECTED" ? (rejectionReason?.trim() || null) : stage === "ARCHIVED" ? undefined : null,
+    },
   });
   refresh();
 }

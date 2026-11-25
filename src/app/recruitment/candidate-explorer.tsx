@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { FileText, Plus, RotateCcw, Search } from "lucide-react";
+import { FileText, Plus, RotateCcw, Search, Trash2 } from "lucide-react";
 import Modal from "@/components/modal";
 import StarRating from "@/components/star-rating";
 import ViewSwitcher, { type ExplorerView } from "@/components/view-switcher";
-import { setCandidateRating, setCandidateStage, setCandidateVacancy } from "@/lib/actions/recruitment";
+import { deleteCandidate, setCandidateRating, setCandidateStage, setCandidateVacancy } from "@/lib/actions/recruitment";
 import { CANDIDATE_STAGES, CANDIDATE_STAGE_LABELS, type CandidateStage } from "@/lib/constants";
 import { candidateScore } from "@/lib/recruitment-score";
 import CandidateForm from "./candidate-form";
@@ -15,10 +15,14 @@ import { OfferStatusBadge, ScoreChip, StageBadge } from "./parts";
 import type { CandidateRow } from "./types";
 
 type SortKey = "newest" | "score" | "rating" | "name";
-type Tab = "active" | "declined";
+type Tab = "active" | "declined" | "archived";
 
-/** Stages that make up the live pipeline; declined candidates live in their own tab. */
-const ACTIVE_STAGES = CANDIDATE_STAGES.filter((s) => s !== "REJECTED");
+/** Stages that make up the live pipeline; declined and archived candidates live in their own tabs. */
+const ACTIVE_STAGES = CANDIDATE_STAGES.filter((s) => s !== "REJECTED" && s !== "ARCHIVED");
+
+function tabOf(stage: string): Tab {
+  return stage === "REJECTED" ? "declined" : stage === "ARCHIVED" ? "archived" : "active";
+}
 
 const SORT_LABELS: Record<SortKey, string> = {
   newest: "Newest first",
@@ -44,6 +48,7 @@ export default function CandidateExplorer({
   fixedVacancyId,
   storageKey,
   cvReading = false,
+  initialTab = "active",
 }: {
   candidates: CandidateRow[];
   vacancies: { id: string; title: string }[];
@@ -52,6 +57,7 @@ export default function CandidateExplorer({
   storageKey: string;
   /** Whether CVs can be read automatically (the AI key is set on the server). */
   cvReading?: boolean;
+  initialTab?: Tab;
 }) {
   const [view, setView] = useState<ExplorerView>("list");
   const [ready, setReady] = useState(false);
@@ -60,7 +66,7 @@ export default function CandidateExplorer({
   const [stageFilter, setStageFilter] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
   const [modalOpen, setModalOpen] = useState(false);
-  const [tab, setTab] = useState<Tab>("active");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [stageOverrides, setStageOverrides] = useState<Record<string, CandidateStage>>({});
   const [ratingOverrides, setRatingOverrides] = useState<Record<string, number | null>>({});
   const [vacancyOverrides, setVacancyOverrides] = useState<Record<string, string>>({});
@@ -91,13 +97,16 @@ export default function CandidateExplorer({
     [candidates, stageOverrides, ratingOverrides, vacancyOverrides, vacancies]
   );
 
-  const declinedCount = useMemo(() => items.filter((c) => c.stage === "REJECTED").length, [items]);
-  const activeCount = items.length - declinedCount;
+  const [deleted, setDeleted] = useState<Set<string>>(new Set());
+  const live = useMemo(() => items.filter((c) => !deleted.has(c.id)), [items, deleted]);
+  const declinedCount = useMemo(() => live.filter((c) => c.stage === "REJECTED").length, [live]);
+  const archivedCount = useMemo(() => live.filter((c) => c.stage === "ARCHIVED").length, [live]);
+  const activeCount = live.length - declinedCount - archivedCount;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = items.filter((c) => {
-      if ((c.stage === "REJECTED") !== (tab === "declined")) return false;
+    const list = live.filter((c) => {
+      if (tabOf(c.stage) !== tab) return false;
       if (vacancyFilter && c.vacancyId !== vacancyFilter) return false;
       if (stageFilter && c.stage !== stageFilter) return false;
       if (!q) return true;
@@ -113,7 +122,7 @@ export default function CandidateExplorer({
       if (sort === "name") return a.name.localeCompare(b.name);
       return b.appliedAt.getTime() - a.appliedAt.getTime();
     });
-  }, [items, tab, search, vacancyFilter, stageFilter, sort]);
+  }, [live, tab, search, vacancyFilter, stageFilter, sort]);
 
   function moveCandidate(candidate: CandidateRow, stage: CandidateStage) {
     if (candidate.stage === stage) return;
@@ -143,7 +152,16 @@ export default function CandidateExplorer({
     });
   }
 
+  function removeCandidate(candidate: CandidateRow) {
+    if (!confirm(`Delete ${candidate.name} permanently, including their CV and notes? This can't be undone.`)) return;
+    setDeleted((prev) => new Set(prev).add(candidate.id));
+    startTransition(() => {
+      deleteCandidate(candidate.id);
+    });
+  }
+
   const declined = tab === "declined";
+  const archived = tab === "archived";
 
   return (
     <div>
@@ -152,6 +170,7 @@ export default function CandidateExplorer({
           [
             ["active", "Active", activeCount],
             ["declined", "Declined", declinedCount],
+            ["archived", "Archive", archivedCount],
           ] as const
         ).map(([key, label, count]) => (
           <button
@@ -191,7 +210,7 @@ export default function CandidateExplorer({
               ))}
             </select>
           )}
-          {!declined && (
+          {tab === "active" && (
             <select
               value={stageFilter}
               onChange={(e) => setStageFilter(e.target.value)}
@@ -217,7 +236,7 @@ export default function CandidateExplorer({
             ))}
           </select>
           <span className="text-xs text-slate-400">
-            {filtered.length} of {declined ? declinedCount : activeCount}
+            {filtered.length} of {declined ? declinedCount : archived ? archivedCount : activeCount}
           </span>
         </div>
 
@@ -234,7 +253,24 @@ export default function CandidateExplorer({
       </div>
 
       {declined ? (
-        <ListView candidates={filtered} showVacancy={!fixedVacancyId} declined onRestore={(c) => moveCandidate(c, "NEW")} />
+        <ListView
+          candidates={filtered}
+          showVacancy={!fixedVacancyId}
+          declined
+          onRestore={(c) => moveCandidate(c, "NEW")}
+          onArchive={(c) => moveCandidate(c, "ARCHIVED")}
+          onDelete={removeCandidate}
+        />
+      ) : archived ? (
+        <ListView
+          candidates={filtered}
+          showVacancy={!fixedVacancyId}
+          vacancies={vacancies}
+          onStage={moveCandidate}
+          onRating={rateCandidate}
+          onVacancy={changeVacancy}
+          emptyText="The archive is empty."
+        />
       ) : (
         <>
           {view === "list" && (
@@ -272,6 +308,9 @@ function ListView({
   showVacancy,
   declined = false,
   onRestore,
+  onArchive,
+  onDelete,
+  emptyText,
   vacancies = [],
   onStage,
   onRating,
@@ -281,6 +320,9 @@ function ListView({
   showVacancy: boolean;
   declined?: boolean;
   onRestore?: (candidate: CandidateRow) => void;
+  onArchive?: (candidate: CandidateRow) => void;
+  onDelete?: (candidate: CandidateRow) => void;
+  emptyText?: string;
   vacancies?: { id: string; title: string }[];
   onStage?: (candidate: CandidateRow, stage: CandidateStage) => void;
   onRating?: (candidate: CandidateRow, rating: number | null) => void;
@@ -289,7 +331,7 @@ function ListView({
   if (candidates.length === 0) {
     return (
       <p className="rounded-xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-400 shadow-sm">
-        {declined ? "Nobody has been declined." : "No candidates yet."}
+        {emptyText ?? (declined ? "Nobody has been declined." : "No candidates yet.")}
       </p>
     );
   }
@@ -397,15 +439,36 @@ function ListView({
                   )}
                 </td>
                 {declined && (
-                  <td className="px-4 py-2.5 text-right">
-                    <button
-                      onClick={() => onRestore?.(c)}
-                      title="Move back to New"
-                      className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
-                    >
-                      <RotateCcw size={12} />
-                      Restore
-                    </button>
+                  <td className="whitespace-nowrap px-4 py-2.5 text-right">
+                    <div className="inline-flex gap-1.5">
+                      <button
+                        onClick={() => onRestore?.(c)}
+                        title="Move back to New"
+                        className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                      >
+                        <RotateCcw size={12} />
+                        Restore
+                      </button>
+                      {onArchive && (
+                        <button
+                          onClick={() => onArchive(c)}
+                          title="Keep their details and CV in the archive"
+                          className="rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                        >
+                          Archive
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button
+                          onClick={() => onDelete(c)}
+                          title="Delete permanently"
+                          className="inline-flex items-center gap-1 rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
+                        >
+                          <Trash2 size={12} />
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </td>
                 )}
               </tr>

@@ -4,7 +4,8 @@ import { candidateRowInclude } from "../types";
 
 export const dynamic = "force-dynamic";
 
-export default async function CandidatesPage() {
+export default async function CandidatesPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
   const [candidates, vacancies] = await Promise.all([
     prisma.candidate.findMany({ include: candidateRowInclude, orderBy: { appliedAt: "desc" } }),
     prisma.vacancy.findMany({
@@ -29,6 +30,7 @@ export default async function CandidatesPage() {
         vacancies={allVacancies}
         storageKey="tendercrm.recruitment.candidates.view"
         cvReading={!!process.env.ANTHROPIC_API_KEY}
+        initialTab={tab === "archived" ? "archived" : tab === "declined" ? "declined" : "active"}
       />
     </div>
   );
