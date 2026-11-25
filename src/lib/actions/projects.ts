@@ -118,6 +118,7 @@ export async function updateProjectStage(projectId: string, stage: Stage) {
       message: `Stage changed to ${STAGE_LABELS[stage]}`,
     },
   });
+  await syncProjectDates(projectId);
 
   if (stage === "WON" || stage === "LOST") {
     await notifyAll(
@@ -130,6 +131,7 @@ export async function updateProjectStage(projectId: string, stage: Stage) {
   revalidatePath("/dashboard");
   revalidatePath("/projects");
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/deadlines");
   return project;
 }
 

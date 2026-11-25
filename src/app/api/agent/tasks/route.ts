@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     return badRequest((e as Error).message);
   }
 
-  const assigneeId = await resolveAssignee(body.assignee, actor.userId);
+  const assigneeId = await resolveAssignee(body.assignee, actor.ownerId);
   if (typeof assigneeId !== "string") return badRequest(assigneeId.error);
 
   const created = await prisma.subtask.create({

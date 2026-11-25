@@ -23,7 +23,7 @@ export async function resolveTarget(target: unknown, required: boolean): Promise
   return "target must start with \"crm:\" or \"pm:\"";
 }
 
-/** An assignee given by email or user id; falls back to the acting user when not given. */
+/** An assignee given by email or user id; falls back to the owner (Dean) when not given. */
 export async function resolveAssignee(value: unknown, fallbackUserId: string): Promise<string | { error: string }> {
   if (value === undefined || value === null || value === "") return fallbackUserId;
   if (typeof value !== "string") return { error: "assignee must be an email or user id" };

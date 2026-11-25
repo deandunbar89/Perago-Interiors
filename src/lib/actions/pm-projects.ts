@@ -174,7 +174,9 @@ export async function updatePmProject(pmProjectId: string, _prevState: unknown, 
 export async function updatePmProjectStatus(pmProjectId: string, status: "ACTIVE" | "ON_HOLD" | "COMPLETE") {
   await requireUserId();
   await prisma.pmProject.update({ where: { id: pmProjectId }, data: { status } });
+  await syncPmProjectDates(pmProjectId);
   revalidatePath("/pm");
+  revalidatePath("/pm/deadlines");
   revalidatePath("/pm/projects");
   revalidatePath(`/pm/projects/${pmProjectId}`);
 }
