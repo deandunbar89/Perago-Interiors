@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, BarChart3, Bot, Briefcase, Building2, CheckSquare, DollarSign, Handshake, HardHat, Home, Settings, User, Users } from "lucide-react";
+import { AlertTriangle, BarChart3, Bot, Briefcase, Building2, Calculator, CheckSquare, DollarSign, Handshake, HardHat, Home, Settings, User, Users } from "lucide-react";
 import type { AppSection } from "@/lib/constants";
 import type { Access } from "@/lib/section-access";
 import NotificationSetup from "./notification-setup";
@@ -16,6 +16,7 @@ const TOOLS = [
   { key: "reports", href: "/reports", label: "Reports", icon: BarChart3, section: "REPORTS" },
   { key: "finance", href: "/finance", label: "Finance", icon: DollarSign, section: "FINANCE" },
   { key: "recruitment", href: "/recruitment", label: "Recruitment", icon: Briefcase, section: "RECRUITMENT" },
+  { key: "rates", href: "/rates", label: "Rates", icon: Calculator, section: "RATES" },
 ] satisfies { key: string; href: string; label: string; icon: typeof Home; section: AppSection | null }[];
 
 export default function AppSwitcherRail({
@@ -33,6 +34,7 @@ export default function AppSwitcherRail({
     | "reports"
     | "finance"
     | "recruitment"
+    | "rates"
     | "team"
     | "settings"
     | "account";

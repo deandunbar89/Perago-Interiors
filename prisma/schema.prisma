@@ -1047,3 +1047,28 @@ model RecruitmentTask {
 
   @@index([status, dueDate])
 }
+
+/// Rate library: every rate Perago receives or checks (contractor / supplier quotes, online prices),
+/// kept so new quotes are priced from real, recent costs. Rates are AED excl. VAT, cost to Perago.
+model RateItem {
+  id          String   @id @default(cuid())
+  trade       String
+  description String
+  unit        String
+  rate        Float
+  /// SUPPLY_INSTALL | SUPPLY_ONLY | INSTALL_ONLY
+  rateType    String   @default("SUPPLY_INSTALL")
+  source      String
+  /// CONTRACTOR_QUOTE | SUPPLIER_QUOTE | ONLINE_PRICE | PERAGO_ESTIMATE
+  sourceType  String   @default("CONTRACTOR_QUOTE")
+  sourceRef   String?
+  projectName String?
+  quotedAt    DateTime
+  notes       String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([trade])
+  @@index([quotedAt])
+}
