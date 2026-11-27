@@ -1,11 +1,10 @@
 import { addDays } from "date-fns";
 import StatCard from "@/app/(app)/dashboard/stat-card";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 import VacanciesExplorer from "./vacancies-explorer";
-import WhatsAppButton from "@/components/whatsapp-button";
+import BookedInterviews from "./booked-interviews";
 import { whatsappNumber } from "@/lib/whatsapp";
-import { formatDubaiDate, formatDubaiTime } from "@/lib/dubai-time";
+import { formatDubaiDate, formatDubaiTime, toDubaiInputValue } from "@/lib/dubai-time";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +24,7 @@ export default async function RecruitmentPage() {
     prisma.interview.findMany({
       where: { scheduledAt: { gte: new Date(now.getTime() - 2 * 60 * 60 * 1000) }, candidate: { stage: { notIn: ["REJECTED", "ARCHIVED", "HIRED"] } } },
       orderBy: { scheduledAt: "asc" },
-      include: { candidate: { select: { id: true, name: true, phone: true, vacancy: { select: { title: true } } } } },
+      include: { candidate: { select: { id: true, name: true, phone: true, vacancyId: true, vacancy: { select: { title: true } } } } },
     }),
   ]);
   // Upcoming interviews (plus any that started in the last 2 hours), for active candidates only.
@@ -57,56 +56,26 @@ export default async function RecruitmentPage() {
         <StatCard label="Archived" value={String(archivedCount)} href="/recruitment/candidates?tab=archived" />
       </div>
 
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-        Booked interviews ({upcoming.length})
-      </h2>
-      <div className="mb-8 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        {upcoming.length === 0 ? (
-          <p className="p-6 text-center text-sm text-slate-400">No interviews booked.</p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-[11px] uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-4 py-2.5 font-semibold">Candidate</th>
-                <th className="px-4 py-2.5 font-semibold">Position</th>
-                <th className="px-4 py-2.5 font-semibold">Interview date</th>
-                <th className="px-4 py-2.5 font-semibold">Time</th>
-                <th className="px-4 py-2.5 font-semibold">Contact number</th>
-                <th className="px-4 py-2.5 font-semibold">WhatsApp</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {upcoming.map((iv) => {
-                const wa = whatsappNumber(iv.candidate.phone);
-                return (
-                  <tr key={iv.id}>
-                    <td className="whitespace-nowrap px-4 py-2.5">
-                      <Link href={`/recruitment/candidates/${iv.candidate.id}`} className="font-medium text-slate-900 hover:underline">
-                        {iv.candidate.name}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-2.5 text-slate-600">{iv.candidate.vacancy.title}</td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-slate-700">{formatDubaiDate(iv.scheduledAt)}</td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-slate-700">{formatDubaiTime(iv.scheduledAt)}</td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-slate-700">
-                      {iv.candidate.phone ? (
-                        <a href={`tel:${iv.candidate.phone.replace(/\s+/g, "")}`} className="hover:underline">
-                          {iv.candidate.phone}
-                        </a>
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2.5">
-                      {wa ? <WhatsAppButton number={wa} name={iv.candidate.name} compact /> : <span className="text-slate-400">—</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <BookedInterviews
+        today={toDubaiInputValue(now).slice(0, 10)}
+        vacancies={vacancies.map((v) => ({ id: v.id, title: v.title }))}
+        rows={upcoming.map((iv) => {
+          const local = toDubaiInputValue(iv.scheduledAt);
+          return {
+            id: iv.id,
+            candidateId: iv.candidate.id,
+            name: iv.candidate.name,
+            phone: iv.candidate.phone,
+            whatsapp: whatsappNumber(iv.candidate.phone),
+            vacancyId: iv.candidate.vacancyId,
+            vacancyTitle: iv.candidate.vacancy.title,
+            date: local.slice(0, 10),
+            time: local.slice(11, 16),
+            dateLabel: formatDubaiDate(iv.scheduledAt),
+            timeLabel: formatDubaiTime(iv.scheduledAt),
+          };
+        })}
+      />
 
       <VacanciesExplorer vacancies={rows} />
     </div>

@@ -546,3 +546,31 @@ export async function deleteCandidateNote(noteId: string) {
   await prisma.candidateNote.delete({ where: { id: noteId } });
   refresh();
 }
+
+// ───────────────────────── Booked interviews list (inline edits) ─────────────────────────
+
+/** Quick edit of a candidate's name or phone from the booked interviews list. */
+export async function updateCandidateQuick(candidateId: string, data: { name?: string; phone?: string }) {
+  await requireRecruitment();
+  const patch: { name?: string; phone?: string | null } = {};
+  if (data.name !== undefined) {
+    const name = data.name.trim();
+    if (!name) return { error: "Name can't be empty" };
+    patch.name = name;
+  }
+  if (data.phone !== undefined) patch.phone = data.phone.trim() || null;
+  await prisma.candidate.update({ where: { id: candidateId }, data: patch });
+  refresh();
+  return { success: true };
+}
+
+/** Move an interview to a new Dubai date / time ("YYYY-MM-DDTHH:mm") and update the Outlook event. */
+export async function rescheduleInterview(interviewId: string, dubaiLocal: string) {
+  await requireRecruitment();
+  const scheduledAt = parseDubaiLocal(dubaiLocal);
+  if (!scheduledAt) return { error: "Invalid date or time" };
+  await prisma.interview.update({ where: { id: interviewId }, data: { scheduledAt } });
+  await syncInterviewToOutlook(interviewId);
+  refresh();
+  return { success: true };
+}
