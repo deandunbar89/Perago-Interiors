@@ -36,3 +36,11 @@ export function formatDubai(d: Date): string {
     minute: "2-digit",
   });
 }
+
+export function formatDubaiDate(d: Date): string {
+  return d.toLocaleDateString("en-GB", { timeZone: TZ, weekday: "short", day: "numeric", month: "short", year: "numeric" });
+}
+
+export function formatDubaiTime(d: Date): string {
+  return d.toLocaleTimeString("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: true });
+}

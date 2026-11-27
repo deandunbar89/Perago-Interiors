@@ -8,7 +8,7 @@ import { MessageCircle } from "lucide-react";
  * Computers: whatsapp://… opens the WhatsApp desktop app, with a WhatsApp Web link
  * underneath for computers that don't have the app.
  */
-export default function WhatsAppButton({ number, name }: { number: string; name: string }) {
+export default function WhatsAppButton({ number, name, compact = false }: { number: string; name: string; compact?: boolean }) {
   const [mobile, setMobile] = useState(true);
 
   useEffect(() => {
@@ -19,6 +19,31 @@ export default function WhatsAppButton({ number, name }: { number: string; name:
   }, []);
 
   const href = mobile ? `https://wa.me/${number}` : `whatsapp://send?phone=${number}`;
+
+  if (compact) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <a
+          href={href}
+          title={`WhatsApp ${name}`}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-2.5 py-1 text-xs font-medium text-white hover:bg-[#1ebe5b]"
+        >
+          <MessageCircle size={13} />
+          WhatsApp
+        </a>
+        {!mobile && (
+          <a
+            href={`https://web.whatsapp.com/send?phone=${number}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] text-slate-400 hover:text-slate-700 hover:underline"
+          >
+            Web
+          </a>
+        )}
+      </span>
+    );
+  }
 
   return (
     <div className="mt-3">
