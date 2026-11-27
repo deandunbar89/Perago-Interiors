@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { markTenderReviewing } from "@/lib/quotes";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/storage";
@@ -37,6 +38,10 @@ export async function createCommercialSection(projectId: string, formData: FormD
 
   if (project) void createCrmCommercialDriveTemplate(project.title, [name]);
 
+  if (await markTenderReviewing(projectId, userId)) {
+    revalidatePath("/dashboard");
+    revalidatePath("/projects");
+  }
   revalidatePath(`/projects/${projectId}`);
   return { success: true };
 }

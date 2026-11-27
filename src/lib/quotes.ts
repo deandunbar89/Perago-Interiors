@@ -122,3 +122,15 @@ export async function issuedQuotesForPmProjects(pmProjectIds: string[]): Promise
     ])
   );
 }
+
+/** Working on a quote (a file added to the tender's Commercial sections) moves a Lead to Reviewing. */
+export async function markTenderReviewing(projectId: string, userId?: string | null) {
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { stage: true } });
+  if (project?.stage !== "LEAD") return false;
+  await prisma.project.update({ where: { id: projectId }, data: { stage: "REVIEWING" } });
+  await prisma.activity.create({
+    data: { projectId, userId: userId ?? null, type: "STAGE_CHANGE", message: "Stage changed to Reviewing (quote in progress)" },
+  });
+  await syncProjectDates(projectId);
+  return true;
+}

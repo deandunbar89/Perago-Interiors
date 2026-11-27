@@ -5,7 +5,7 @@ import { badRequest, isResponse, requireAgent } from "@/lib/agent-auth";
 import { resolveTarget } from "@/lib/agent-targets";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/storage";
 import { mirrorToDrive } from "@/lib/google-drive";
-import { issueCrmQuote, issuePmQuote } from "@/lib/quotes";
+import { issueCrmQuote, issuePmQuote, markTenderReviewing } from "@/lib/quotes";
 import {
   DOC_CATEGORIES,
   DOC_CATEGORY_LABELS,
@@ -218,7 +218,10 @@ export async function POST(req: Request) {
     });
 
     if (issued) await issueCrmQuote(projectId, doc.id, { value: issuedValue, at: issuedAt, userId: actor.userId });
+    else await markTenderReviewing(projectId, actor.userId);
     revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/dashboard");
+    revalidatePath("/projects");
     return NextResponse.json({ id: doc.id, filedIn: `Commercial › ${section.name}`, name: file.name, issued }, { status: 201 });
   }
 
