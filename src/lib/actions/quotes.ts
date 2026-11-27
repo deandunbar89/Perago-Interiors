@@ -24,6 +24,8 @@ function parseDate(value: string | null | undefined) {
 
 function refresh() {
   revalidatePath("/dashboard");
+  revalidatePath("/projects");
+  revalidatePath("/deadlines");
   revalidatePath("/pm");
   revalidatePath("/reports");
 }

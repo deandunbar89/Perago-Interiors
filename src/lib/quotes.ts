@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { syncProjectDates } from "@/lib/tasks-sync";
 
 /**
  * Issued quotes: one file per tender (CRM) or PM project is marked as the quote issued to the client.
@@ -39,6 +40,16 @@ export async function issueCrmQuote(
       },
     }),
   ]);
+
+  // Issuing a quote means the tender has been submitted: move it on from Lead / Reviewing.
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { stage: true } });
+  if (project && (project.stage === "LEAD" || project.stage === "REVIEWING")) {
+    await prisma.project.update({ where: { id: projectId }, data: { stage: "TENDER_SUBMITTED" } });
+    await prisma.activity.create({
+      data: { projectId, userId: opts.userId ?? null, type: "STAGE_CHANGE", message: "Stage changed to Submitted (quote issued to client)" },
+    });
+    await syncProjectDates(projectId);
+  }
   return { success: true };
 }
 
