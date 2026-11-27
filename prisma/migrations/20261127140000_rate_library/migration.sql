@@ -19,3 +19,5 @@ CREATE TABLE "RateItem" (
 );
 CREATE INDEX "RateItem_trade_idx" ON "RateItem"("trade");
 CREATE INDEX "RateItem_quotedAt_idx" ON "RateItem"("quotedAt");
+
+ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS 'RATES';
