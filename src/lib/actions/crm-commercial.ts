@@ -38,10 +38,6 @@ export async function createCommercialSection(projectId: string, formData: FormD
 
   if (project) void createCrmCommercialDriveTemplate(project.title, [name]);
 
-  if (await markTenderReviewing(projectId, userId)) {
-    revalidatePath("/dashboard");
-    revalidatePath("/projects");
-  }
   revalidatePath(`/projects/${projectId}`);
   return { success: true };
 }
@@ -121,6 +117,10 @@ export async function uploadCommercialDocument(projectId: string, sectionId: str
     },
   });
 
+  if (await markTenderReviewing(projectId, userId)) {
+    revalidatePath("/dashboard");
+    revalidatePath("/projects");
+  }
   revalidatePath(`/projects/${projectId}`);
   return { success: true };
 }
