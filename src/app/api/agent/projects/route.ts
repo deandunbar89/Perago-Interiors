@@ -1,6 +1,9 @@
+import { revalidatePath } from "next/cache";
+import { resolveTarget } from "@/lib/agent-targets";
+import { markTenderReviewing } from "@/lib/quotes";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { dateOnly, isResponse, requireAgent } from "@/lib/agent-auth";
+import { badRequest, dateOnly, isResponse, requireAgent } from "@/lib/agent-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -63,4 +66,30 @@ export async function GET(req: Request) {
     })),
     team,
   });
+}
+
+/**
+ * PATCH /api/agent/projects  JSON { target: "crm:<id>", stage: "REVIEWING" }
+ * Commercial calls this when it starts working on a quote: a Lead tender moves to Reviewing.
+ * Only moves a tender forward from Lead; any other stage is left as it is.
+ */
+export async function PATCH(req: Request) {
+  const actor = await requireAgent(req);
+  if (isResponse(actor)) return actor;
+  let body: { target?: string; stage?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return badRequest('Send JSON { target: "crm:<id>", stage: "REVIEWING" }');
+  }
+  if (body.stage !== "REVIEWING") return badRequest('stage must be "REVIEWING" (Submitted is set by marking a quote issued)');
+  const target = await resolveTarget(body.target ?? null, true);
+  if (typeof target === "string") return badRequest(target);
+  if (!target.projectId) return badRequest("target must be a tender (crm:<id>)");
+  const moved = await markTenderReviewing(target.projectId, actor.userId);
+  const project = await prisma.project.findUnique({ where: { id: target.projectId }, select: { stage: true } });
+  revalidatePath("/dashboard");
+  revalidatePath("/projects");
+  revalidatePath(`/projects/${target.projectId}`);
+  return NextResponse.json({ moved, stage: project?.stage ?? null });
 }
