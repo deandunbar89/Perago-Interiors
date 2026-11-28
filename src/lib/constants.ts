@@ -504,7 +504,7 @@ export const CANDIDATE_STAGE_LABELS: Record<CandidateStage, string> = {
   SCREENING: "Screening",
   INTERVIEW_SCHEDULING: "Interview (scheduling)",
   INTERVIEW_BOOKED: "Interview (booked)",
-  INTERVIEW: "Interview",
+  INTERVIEW: "Interview conducted",
   OFFER: "Offer",
   HIRED: "Hired",
   REJECTED: "Rejected",
